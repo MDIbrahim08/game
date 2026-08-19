@@ -1272,9 +1272,9 @@
         desc: "👑 <strong>The Pig King wrote this PHP code to lock his stolen egg vault:</strong><br/><div class='code-snippet'>$key = $_POST['key'];<br/>$sql = \"SELECT * FROM vault WHERE secret_pass = '$key'\";</div>Alex enters into the password box: <span style='color:#d84315; font-weight:bold;'>' OR 1=1 --</span><br/><br/><strong>What happens when this query runs?</strong>",
         correctOptionIdx: 0,
         options: [
-          "The '1=1' condition is always TRUE! The safe pops wide open! 🎯 (Launch Bird!)",
-          "The database overheats and turns all pigs into bacon 💥 (TNT Trap!)",
-          "The server sends an apology email to Alex 💥 (TNT Trap!)"
+          "The '1=1' condition is always TRUE, returning all records and unlocking the vault.",
+          "The database overheats, throws an exception, and locks the safe forever.",
+          "The server redirects the attacker to an apology page and logs the incident."
         ],
         hint: "Appending ' OR 1=1 bypasses authentication because 1=1 is always true!",
         pigTaunt: "Oink! My SQL vault is 100% impenetrable! You will NEVER guess the glitch! 🐷",
@@ -1290,9 +1290,9 @@
         desc: "🍪 <strong>Hacker Pig injected malicious script tags into the gamer chat room:</strong><br/><div class='code-snippet'>&lt;h2&gt;Welcome, &lt;?php echo $_GET['username']; ?&gt;!&lt;/h2&gt;</div>Hacker Pig sets their username to:<br/><span style='color:#d84315; font-weight:bold;'>&lt;script&gt;alert('Stealing cookies!')&lt;/script&gt;</span><br/><br/><strong>Why is this dangerous?</strong>",
         correctOptionIdx: 1,
         options: [
-          "The computer runs out of WiFi internet speed 💥 (TNT Trap!)",
-          "Reflected XSS! The browser executes the pig's script on every user's screen! 🎯 (Launch Bird!)",
-          "It orders 50 boxes of extra crispy pepperoni pizza 💥 (TNT Trap!)"
+          "The browser runs out of sandbox memory and slows down the local router speed.",
+          "Reflected XSS! The web browser runs the pig's malicious code on other users' screens.",
+          "The application server redirects all users to download an external patch file."
         ],
         hint: "Unescaped inputs printed directly into HTML will execute as raw JavaScript!",
         pigTaunt: "Hahaha! My chat script will steal all your session cookies! 🍪",
@@ -1308,9 +1308,9 @@
         desc: "🥚 <strong>The Pig King's reward API allows claiming prize eggs without checking ownership:</strong><br/><div class='code-snippet'>function claimReward(player, eggId) {<br/>&nbsp;&nbsp;if (db.getEgg(eggId)) {<br/>&nbsp;&nbsp;&nbsp;&nbsp;player.addEgg(eggId); // ⚠️ No ownership check!<br/>&nbsp;&nbsp;}<br/>}</div><br/><strong>What catastrophic exploit is this?</strong>",
         correctOptionIdx: 1,
         options: [
-          "The server runs out of digital dirt blocks 💥 (TNT Trap!)",
-          "IDOR / Broken Auth! Any player can steal anyone's eggs just by guessing egg IDs! 🎯 (Launch Bird!)",
-          "The slingshot runs out of rubber band elasticity 💥 (TNT Trap!)"
+          "The server memory gets corrupted and deletes the active player inventory.",
+          "IDOR / Broken Auth! Any player can query other players' egg IDs and claim their rewards.",
+          "The database rejects the request because it does not match a secure schema."
         ],
         hint: "The code checks if the egg exists, but never checks if the current player actually owns it!",
         pigTaunt: "Oink! I can claim ANY egg in the game because there's no auth check! Try to stop me! 😈",
@@ -1326,9 +1326,9 @@
         desc: "🌐 <strong>Hacker Pig built a webhook tester to query server status:</strong><br/><div class='code-snippet'>function testWebhook(userUrl) {<br/>&nbsp;&nbsp;return http.get(userUrl); // ⚠️ No URL validation!<br/>}</div>Hacker Pig requests:<br/><span style='color:#d84315; font-weight:bold;'>http://localhost:8080/admin/delete_all_birds</span><br/><br/><strong>What security vulnerability is this?</strong>",
         correctOptionIdx: 1,
         options: [
-          "The router will overheat and spawn block items 💥 (TNT Trap!)",
-          "SSRF! The server requests internal local services that are hidden from the public! 🎯 (Launch Bird!)",
-          "It triggers an automatic backup to the Pig King's Google Drive 💥 (TNT Trap!)"
+          "The request triggers a local router overload and drops local network connections.",
+          "SSRF! The server is forced to send requests to local network services hidden from the public.",
+          "The server crashes due to an infinite HTTP redirection loop."
         ],
         hint: "Allowing users to make the server fetch arbitrary internal URLs bypasses firewalls!",
         pigTaunt: "Oink! I can scan all your internal backend databases with my webhook tester! 😈",
@@ -1344,9 +1344,9 @@
         desc: "🔑 <strong>Developer Pig committed this configuration file to GitHub:</strong><br/><div class='code-snippet'>const AWS_ACCESS_KEY = 'AKIA_PIG_ADMIN_TOKEN_999';<br/>const AWS_SECRET_KEY = 'pig_secret_pass_12345';</div><strong>What is the best way to secure this configuration?</strong>",
         correctOptionIdx: 0,
         options: [
-          "Use Environment Variables (.env) and add the file to .gitignore! 🎯 (Launch Bird!)",
-          "Encrypt the secret key in brain-dead ROT13 cipher in code 💥 (TNT Trap!)",
-          "Change the password to a longer name like 'piggy_king_ultra_pass_999' 💥 (TNT Trap!)"
+          "Use Environment Variables (.env) to store keys at runtime and add the file to .gitignore.",
+          "Keep keys hardcoded but encode them in ROT13/Base64 to hide them from simple scans.",
+          "Change the API keys frequently and restrict access to specific developer IP addresses."
         ],
         hint: "Never commit raw credentials to source control. Load them at runtime from env variables!",
         pigTaunt: "Oink! I scanned your public GitHub repo and found your secret AWS master tokens! 🔑",
