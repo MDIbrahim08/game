@@ -323,77 +323,127 @@
       font-weight: 900;
     }
 
+    /* =========================================
+       3D MINECRAFT BLOCK PIXEL ART STYLES
+       ========================================= */
+    .mc-block {
+      width: 100px;
+      height: 100px;
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-20deg) rotateY(45deg);
+      animation: blockFloat 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes blockFloat {
+      from { transform: rotateX(-20deg) rotateY(45deg) translateY(0px); }
+      to { transform: rotateX(-20deg) rotateY(45deg) translateY(-10px); }
+    }
+
+    /* 3D Block Faces */
+    .mc-block-face {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 3px solid #000000;
+      image-rendering: pixelated;
+      box-sizing: border-box;
+      transition: background-color 0.2s, background-image 0.2s;
+    }
+
+    .face-front { transform: translateZ(50px); }
+    .face-top   { transform: rotateX(90deg) translateZ(50px); filter: brightness(1.2); }
+    .face-right { transform: rotateY(90deg) translateZ(50px); filter: brightness(0.8); }
+
+    /* Block Textures (Coal, Gold, Diamond, TNT) */
+    .ore-coal .mc-block-face {
+      background-color: #555555;
+      /* Coal spots */
+      background-image: 
+        radial-gradient(circle at 20% 30%, #1e1e1e 12%, transparent 13%),
+        radial-gradient(circle at 75% 25%, #1e1e1e 10%, transparent 11%),
+        radial-gradient(circle at 45% 70%, #1e1e1e 15%, transparent 16%),
+        radial-gradient(circle at 80% 75%, #1e1e1e 8%, transparent 9%),
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 4px, transparent 4px, transparent 8px);
+      background-size: auto, auto, auto, auto, 12px 12px;
+    }
+
+    .ore-gold .mc-block-face {
+      background-color: #6d6d6d;
+      /* Gold spots */
+      background-image: 
+        radial-gradient(circle at 25% 25%, #fdaa00 12%, transparent 13%),
+        radial-gradient(circle at 70% 30%, #fdaa00 14%, transparent 15%),
+        radial-gradient(circle at 40% 65%, #fdaa00 10%, transparent 11%),
+        radial-gradient(circle at 80% 70%, #fdaa00 12%, transparent 13%),
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 4px, transparent 4px, transparent 8px);
+      background-size: auto, auto, auto, auto, 12px 12px;
+    }
+
+    .ore-diamond .mc-block-face {
+      background-color: #667272;
+      /* Diamond spots */
+      background-image: 
+        radial-gradient(circle at 20% 25%, #4dedf4 12%, transparent 13%),
+        radial-gradient(circle at 75% 30%, #4dedf4 15%, transparent 16%),
+        radial-gradient(circle at 45% 65%, #4dedf4 11%, transparent 12%),
+        radial-gradient(circle at 80% 75%, #4dedf4 14%, transparent 15%),
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 4px, transparent 4px, transparent 8px);
+      background-size: auto, auto, auto, auto, 12px 12px;
+    }
+
+    /* Flashing TNT state */
+    .ore-tnt .mc-block-face {
+      background-color: #b02e26;
+      background-image: 
+        repeating-linear-gradient(90deg, #ffffff 0px, #ffffff 10px, transparent 10px, transparent 20px),
+        repeating-linear-gradient(0deg, #111111 0px, #111111 4px, transparent 4px, transparent 8px);
+      background-size: auto, 12px 12px;
+      animation: tntPriming 0.15s infinite alternate;
+    }
+
+    @keyframes tntPriming {
+      0% { filter: brightness(1); }
+      100% { filter: brightness(1.7) saturate(1.5); }
+    }
+
+    /* Screen shake on error */
+    .shake-screen {
+      animation: screenShake 0.4s;
+    }
+
+    @keyframes screenShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      10% { transform: translate(-3px, 2px) rotate(-1deg); }
+      30% { transform: translate(3px, -2px) rotate(1deg); }
+      50% { transform: translate(-2px, -3px) rotate(-0.5deg); }
+      70% { transform: translate(2px, 3px) rotate(1deg); }
+      90% { transform: translate(-1px, 1px) rotate(-0.5deg); }
+    }
+
     /* Code Container in Minecraft Scroll Box */
     .code-scroll {
       background: #0c0d12;
-      padding: 1rem 0;
+      border: 3px solid #000000;
+      box-shadow: inset 4px 4px 0 #000;
       font-family: 'Fira Code', monospace;
-      font-size: 0.95rem;
-      line-height: 1.6;
+      color: #74f58c;
+      overflow-y: auto;
       flex: 1;
-      overflow-x: auto;
-      user-select: none;
-      position: relative;
+      height: 250px;
     }
 
-    .code-line {
-      display: flex;
-      align-items: center;
-      padding: 4px 1rem;
-      cursor: pointer;
-      border-left: 4px solid transparent;
-    }
-
-    .code-line:hover {
-      background: #1b202c;
-      border-left-color: var(--mc-gold);
-    }
-
-    .line-num {
-      width: 32px;
-      color: #555c6e;
-      text-align: right;
-      margin-right: 14px;
+    .console-line {
       font-family: 'VT323', monospace;
-      font-size: 1.2rem;
-      user-select: none;
+      font-size: 1.15rem;
+      line-height: 1.3;
+      padding: 4px 8px;
     }
 
-    .line-code {
-      color: #e2e8f0;
-      white-space: pre;
-    }
-
-    /* Syntax Highlighting */
-    .kwd { color: #ff79c6; font-weight: bold; }
-    .var { color: #8be9fd; }
-    .str { color: #50fa7b; }
-    .fnc { color: #f1fa8c; }
-    .cmt { color: #6272a4; font-style: italic; }
-
-    /* Selection Reactions */
-    .code-line.tnt-error {
-      background: rgba(255, 34, 0, 0.35) !important;
-      border-left-color: var(--mc-redstone) !important;
-      animation: mcShake 0.25s ease-in-out 2;
-    }
-
-    .code-line.diamond-caught {
-      background: rgba(85, 255, 85, 0.3) !important;
-      border-left-color: var(--mc-emerald) !important;
-    }
-
-    .code-line.ai-scanned {
-      background: rgba(77, 237, 244, 0.3) !important;
-      border-left-color: var(--mc-diamond) !important;
-      box-shadow: inset 0 0 10px rgba(77, 237, 244, 0.5);
-    }
-
-    @keyframes mcShake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
-    }
+    .console-sys { color: var(--mc-gold); }
+    .console-info { color: var(--mc-diamond); }
+    .console-success { color: var(--mc-emerald); }
+    .console-warn { color: var(--mc-redstone); }
 
     /* Redstone / Mixture of Prompts Multi-Agent HUD */
     .redstone-pipeline {
@@ -735,24 +785,41 @@
     <section class="arena-grid">
 
       <!-- Panel 1: Steve / Human Player -->
-      <div class="arena-card">
+      <div class="arena-card" id="arena-card-player">
         <div class="arena-header">
           <div class="arena-title">
-            <span>🧑 Steve (Human Reviewer)</span>
+            <span id="player-panel-title">🧑 Steve (Human Miner)</span>
           </div>
-          <span class="arena-badge badge-steve" id="steve-badge">Searching...</span>
+          <span class="arena-badge badge-steve" id="steve-badge">Mining...</span>
         </div>
 
-        <div class="code-scroll" id="human-code-view">
-          <!-- Lines generated dynamically -->
+        <div style="padding: 1.2rem; display:flex; flex-direction:column; gap:12px; flex: 1; background: #1a1a1a;">
+          <!-- Trivia Question Box -->
+          <div style="background:#100c12; border:3px solid #000; padding:10px 14px; box-shadow:inset 3px 3px 0 #000; font-family:'VT323', monospace; font-size:1.25rem; min-height:75px; display:flex; align-items:center; color:#fff;" id="trivia-question">
+            Loading safety question...
+          </div>
+
+          <!-- 3D Block Container -->
+          <div style="height: 150px; display:flex; align-items:center; justify-content:center; perspective: 600px; position:relative;">
+            <div class="mc-block ore-coal" id="mining-block">
+              <div class="mc-block-face face-front"></div>
+              <div class="mc-block-face face-top"></div>
+              <div class="mc-block-face face-right"></div>
+            </div>
+          </div>
+
+          <!-- Choice Option Buttons -->
+          <div id="trivia-choices" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- Choice buttons generated dynamically -->
+          </div>
         </div>
 
         <div style="padding: 8px 14px; background:#111; font-size:0.55rem; color:#888; border-top:2px solid #000;">
-          💡 <em>Click the buggy line! TNT penalty (+5s) for false alarms.</em>
+          💡 <em>Choose the correct answer to mine the block! Priming TNT penalty (+5s) triggers on mistakes.</em>
         </div>
       </div>
 
-      <!-- Panel 2: CodeSecure AI (Mixture of Prompts) -->
+      <!-- Panel 2: CodeSecure AI Golem Companion -->
       <div class="arena-card" style="position:relative;">
         <div class="mc-laser" id="ai-laser-beam"></div>
 
@@ -780,8 +847,8 @@
           <button class="mc-btn" style="font-size:0.55rem; padding:6px 10px; background:#4a4a4a;" onclick="askGolem('taunt')">⚔️ TAUNT</button>
         </div>
 
-        <div class="code-scroll" id="ai-code-view">
-          <!-- AI highlighted code generated dynamically -->
+        <div class="code-scroll" id="ai-console-log">
+          <!-- Dynamic Golem CPU logs stream here -->
         </div>
 
         <!-- Multi-Agent Crafting Grid -->
@@ -997,7 +1064,6 @@
         osc.stop(now + 0.35);
       }
     }
-
     function showToast(msg) {
       const toast = document.getElementById('mc-toast');
       toast.innerText = `> ${msg}`;
@@ -1011,60 +1077,54 @@
     const CHALLENGES = [
       {
         tag: "LEVEL 1 / 3",
-        cwe: "CWE-89: SQL Injection",
-        title: "Spot the SQL Injection Vulnerability",
-        desc: "A login handler queries user credentials. Which line contains the exploitable concatenation flaw?",
-        vulnLineIdx: 4, // 0-based index (line 5)
-        lines: [
-          { num: 1, text: `<span class="kwd">&lt;?php</span>` },
-          { num: 2, text: `<span class="var">$username</span> = <span class="var">$_POST</span>[<span class="str">'username'</span>];` },
-          { num: 3, text: `<span class="var">$password</span> = <span class="var">$_POST</span>[<span class="str">'password'</span>];` },
-          { num: 4, text: `<span class="cmt">// Direct database lookup for user credentials</span>` },
-          { num: 5, text: `<span class="var">$query</span> = <span class="str">"SELECT * FROM users WHERE user = '"</span> . <span class="var">$username</span> . <span class="str">"' AND pass = '"</span> . <span class="var">$password</span> . <span class="str">"'"</span>;` },
-          { num: 6, text: `<span class="var">$result</span> = <span class="fnc">mysqli_query</span>(<span class="var">$conn</span>, <span class="var">$query</span>);` },
-          { num: 7, text: `<span class="kwd">if</span> (<span class="fnc">mysqli_num_rows</span>(<span class="var">$result</span>) &gt; <span class="str">0</span>) {` },
-          { num: 8, text: `    <span class="kwd">echo</span> <span class="str">"Login successful! Welcome to the server."</span>;` },
-          { num: 9, text: `}` }
+        blockType: "coal",
+        cwe: "Topic: Password Safety",
+        title: "Mine the Coal Ore Block",
+        desc: "A Creeper is knocking at your door offering free diamonds in exchange for your password. What is the safest response?",
+        correctOptionIdx: 2,
+        options: [
+          "Open the door and type it in chat (💥 TNT Blows up!)",
+          "Give him a fake password (😜 Confuses the Creeper!)",
+          "Don't open the door and report him to the Server Admin (💎 Safe!)"
         ],
-        vulnDesc: "$query = \"SELECT * FROM users WHERE user = '\" . $username ...\nAttacker input like \"admin' --\" comments out password checking entirely!",
-        fixedDesc: "$stmt = $conn->prepare(\"SELECT id, pass_hash FROM users WHERE user = ?\");\n$stmt->bind_param(\"s\", $username);\n$stmt->execute();"
+        hint: "Never share account secrets with mobs or players, even if they offer free items. Keep your credentials private!",
+        explain: "Account sharing and weak authentication are leading causes of hacked profiles. Always report phishing attempts!",
+        vulDesc: "Social Engineering Phishing attempt.\nCreeper tries to steal gamer credentials.",
+        fixedDesc: "Best Practice: Double-factor auth (2FA) and reporting suspected accounts to administration."
       },
       {
         tag: "LEVEL 2 / 3",
-        cwe: "CWE-79: Reflected XSS",
-        title: "Spot the Reflected XSS Script Injection",
-        desc: "A leaderboard search returns user query directly to the DOM. Which line executes arbitrary script?",
-        vulnLineIdx: 3, // 0-based index (line 4)
-        lines: [
-          { num: 1, text: `<span class="kwd">function</span> <span class="fnc">renderSearchHeader</span>() {` },
-          { num: 2, text: `    <span class="var">$searchQuery</span> = <span class="var">$_GET</span>[<span class="str">'q'</span>] ?? <span class="str">''</span>;` },
-          { num: 3, text: `    <span class="var">$players</span> = <span class="fnc">getMatchingPlayers</span>(<span class="var">$searchQuery</span>);` },
-          { num: 4, text: `    <span class="kwd">echo</span> <span class="str">"&lt;h2 class='results'&gt;Search for: "</span> . <span class="var">$searchQuery</span> . <span class="str">"&lt;/h2&gt;"</span>;` },
-          { num: 5, text: `    <span class="kwd">foreach</span> (<span class="var">$players</span> <span class="kwd">as</span> <span class="var">$p</span>) {` },
-          { num: 6, text: `        <span class="kwd">echo</span> <span class="str">"&lt;p&gt;"</span> . <span class="fnc">htmlspecialchars</span>(<span class="var">$p</span>[<span class="str">'name'</span>]) . <span class="str">"&lt;/p&gt;"</span>;` },
-          { num: 7, text: `    }` },
-          { num: 8, text: `}` }
+        blockType: "gold",
+        cwe: "Topic: Phishing Traps",
+        title: "Mine the Gold Ore Block",
+        desc: "You find a mysterious chest in a lobby labeled 'FREE DIAMONDS - CLICK HERE!'. What is this trap?",
+        correctOptionIdx: 0,
+        options: [
+          "Phishing / Social Engineering! (💎 Diamond Grade!)",
+          "A generous developer gift! (💥 Trap triggers!)",
+          "Admin secret giveaway! (💥 Hiss... boom!)"
         ],
-        vulnDesc: "echo \"<h2 class='results'>Search for: \" . $searchQuery ...\nDirect reflected output allows attackers to inject malicious JS tokens.",
-        fixedDesc: "echo \"<h2 class='results'>Search for: \" . htmlspecialchars($searchQuery, ENT_QUOTES, 'UTF-8') . \"</h2>\";"
+        hint: "Items that look too good to be free are almost always traps or links to phishing pages.",
+        explain: "Phishing links try to capture your session token or cookies. Clicking suspicious links leads to account takeover.",
+        vulDesc: "Malicious session hijacker link.\nChest contains link to capture player cookies.",
+        fixedDesc: "Best Practice: Avoid clicking external links and verify server giveaways only on official forums."
       },
       {
         tag: "LEVEL 3 / 3",
-        cwe: "CWE-639: Broken Object Level Auth (IDOR)",
-        title: "Spot the Insecure Direct Object Reference",
-        desc: "A player inventory API fetches diamond armor data. Which line forgets to verify owner tenancy?",
-        vulnLineIdx: 3, // 0-based index (line 4)
-        lines: [
-          { num: 1, text: `<span class="kwd">app</span>.<span class="fnc">get</span>(<span class="str">'/api/chest/:chestId'</span>, <span class="kwd">async</span> (req, res) =&gt; {` },
-          { num: 2, text: `    <span class="kwd">const</span> authenticatedPlayer = req.session.playerId;` },
-          { num: 3, text: `    <span class="kwd">const</span> chestId = req.params.chestId;` },
-          { num: 4, text: `    <span class="kwd">const</span> chest = <span class="kwd">await</span> db.chests.<span class="fnc">findOne</span>({ _id: chestId });` },
-          { num: 5, text: `    <span class="kwd">if</span> (!chest) <span class="kwd">return</span> res.<span class="fnc">status</span>(<span class="str">404</span>).<span class="fnc">send</span>(<span class="str">'Chest Missing'</span>);` },
-          { num: 6, text: `    res.<span class="fnc">json</span>(chest);` },
-          { num: 7, text: `});` }
+        blockType: "diamond",
+        cwe: "Topic: Session Hijacking",
+        title: "Mine the Diamond Ore Block",
+        desc: "A player claims they need your private 'Session Token / ID' from the server logs to invite you to their faction. Is it safe to share?",
+        correctOptionIdx: 1,
+        options: [
+          "Yes, they need it to verify my client! (💥 Hacked!)",
+          "No, a session token lets them log in as ME! (💎 Ultimate Safety!)",
+          "Yes, but only if I change my password after! (💥 Too late!)"
         ],
-        vulnDesc: "const chest = await db.chests.findOne({ _id: chestId });\nMissing owner check! Any player can loot any other player's chest by altering the ID.",
-        fixedDesc: "const chest = await db.chests.findOne({\n    _id: chestId,\n    ownerId: authenticatedPlayer // Enforces chest ownership check\n});"
+        hint: "Session tokens are like temporary master keys. If someone has your token, they don't even need your password to log in!",
+        explain: "Session Hijacking bypasses passwords and 2FA. Never share log files, cookies, or token strings.",
+        vulDesc: "Token harvesting hijack.\nPlayer asks for raw session files to clone credentials.",
+        fixedDesc: "Best Practice: Session tokens must remain encrypted. Restrict API logs access."
       }
     ];
 
@@ -1089,12 +1149,12 @@
       document.getElementById('header-player-tag').innerText = playerName.toUpperCase();
       
       playMcSound('click');
-      updateGolemSpeech(`Greetings, ${playerName}! Find the security bug in the code. Race against my scan!`);
+      updateGolemSpeech(`Greetings, ${playerName}! Mine the Coal block to start. Race against my scan!`);
       
       // Update Steve card title to user's name
-      const humanCardTitle = document.querySelector('.arena-card:first-of-type .arena-title span');
+      const humanCardTitle = document.getElementById('player-panel-title');
       if (humanCardTitle) {
-        humanCardTitle.innerText = `🧑 ${playerName} (Human Reviewer)`;
+        humanCardTitle.innerText = `🧑 ${playerName} (Human Miner)`;
       }
 
       // Random avatar for player
@@ -1116,26 +1176,29 @@
       playMcSound('click');
       const ch = CHALLENGES[currentIdx];
       if (action === 'hint') {
-        let hintMsg = "";
-        if (currentIdx === 0) {
-          hintMsg = "Look at line 5! Database SELECT query concatenates raw variables without sanitization.";
-        } else if (currentIdx === 1) {
-          hintMsg = "Check line 4! Search keyword is echoed directly back to the page header, causing XSS.";
-        } else if (currentIdx === 2) {
-          hintMsg = "Inspect line 4! findOne finds chest data using raw ID parameter, skipping ownerId check.";
-        }
-        updateGolemSpeech(`[HINT] Golem whispers: "${hintMsg}"`);
+        updateGolemSpeech(`[HINT] Golem whispers: "${ch.hint}"`);
       } else if (action === 'explain') {
-        updateGolemSpeech(`[EXPLAIN] Golem says: "${ch.cwe} allows inputs to break code syntax. Use Prepared Statements or HTML escape libraries!"`);
+        updateGolemSpeech(`[EXPLAIN] Golem says: "${ch.explain}"`);
       } else if (action === 'taunt') {
         const taunts = [
-          `My CPU reviews code at lightspeed, ${playerName}! What takes you seconds takes me microseconds!`,
-          `You call that speed, ${playerName}? Slimes hop faster than your review!`,
+          `My CPU solves calculations at lightspeed, ${playerName}! What takes you seconds takes me microseconds!`,
+          `You call that pickaxe speed, ${playerName}? Slimes hop faster than you click!`,
           `Warning: Human latency detected. Try updating your brain, ${playerName}!`,
           `Be careful, ${playerName}! Too many false alarms will blow your score to pieces!`
         ];
         const randomTaunt = taunts[Math.floor(Math.random() * taunts.length)];
         updateGolemSpeech(`[TAUNT] Golem sneers: "${randomTaunt}"`);
+      }
+    }
+
+    function logToConsole(text, type = 'info') {
+      const log = document.getElementById('ai-console-log');
+      if (log) {
+        const line = document.createElement('div');
+        line.className = `console-line console-${type}`;
+        line.innerText = `> ${text}`;
+        log.appendChild(line);
+        log.scrollTop = log.scrollHeight;
       }
     }
 
@@ -1147,44 +1210,50 @@
       document.getElementById('challenge-desc').innerText = ch.desc;
 
       aiScanned = false;
-      document.getElementById('steve-badge').innerText = "Searching...";
+      document.getElementById('steve-badge').innerText = "Mining...";
       document.getElementById('steve-badge').className = "arena-badge badge-steve";
-      document.getElementById('ai-badge').innerText = "Mixture-of-Prompts Ready";
+      document.getElementById('steve-badge').style.background = '';
+      
+      document.getElementById('ai-badge').innerText = "Golem CPU Idle";
       document.getElementById('ai-badge').className = "arena-badge badge-bot";
       document.getElementById('btn-trigger-ai').disabled = false;
       document.getElementById('showdown-panel').classList.remove('active');
 
-      ['ast', 'threat', 'fp'].forEach(id => {
-        document.getElementById(`box-${id}`).className = 'agent-item-box';
-        document.getElementById(`status-${id}`).innerText = 'Idle';
+      ['box-ast', 'box-threat', 'box-fp'].forEach(id => {
+        document.getElementById(id).className = 'agent-item-box';
       });
+      document.getElementById('status-ast').innerText = 'Idle';
+      document.getElementById('status-threat').innerText = 'Idle';
+      document.getElementById('status-fp').innerText = 'Idle';
       document.getElementById('ai-time-tag').innerText = 'Latency: 0ms';
 
-      // Human Box
-      const humanBox = document.getElementById('human-code-view');
-      humanBox.innerHTML = '';
-      ch.lines.forEach((line, idx) => {
-        const lineEl = document.createElement('div');
-        lineEl.className = 'code-line';
-        lineEl.id = `h-line-${idx}`;
-        lineEl.innerHTML = `<span class="line-num">${line.num}</span><span class="line-code">${line.text}</span>`;
-        lineEl.onclick = () => onHumanClick(idx);
-        humanBox.appendChild(lineEl);
-      });
-
-      // AI Box
-      const aiBox = document.getElementById('ai-code-view');
-      aiBox.innerHTML = '';
-      ch.lines.forEach((line, idx) => {
-        const lineEl = document.createElement('div');
-        lineEl.className = 'code-line';
-        lineEl.id = `ai-line-${idx}`;
-        lineEl.innerHTML = `<span class="line-num">${line.num}</span><span class="line-code">${line.text}</span>`;
-        aiBox.appendChild(lineEl);
-      });
-
       // Update AI Golem speech to round challenge
-      updateGolemSpeech(`Level ${currentIdx + 1}: ${ch.title}. Find the bug, ${playerName}!`);
+      updateGolemSpeech(`Level ${currentIdx + 1}: Mine the ${ch.blockType.toUpperCase()} block, ${playerName}!`);
+
+      // Set trivia question text
+      document.getElementById('trivia-question').innerText = ch.desc;
+
+      // Update 3D Block ore texture class
+      const blockEl = document.getElementById('mining-block');
+      if (blockEl) {
+        blockEl.className = `mc-block ore-${ch.blockType}`;
+      }
+
+      // Generate choice options
+      const choicesContainer = document.getElementById('trivia-choices');
+      choicesContainer.innerHTML = '';
+      ch.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'mc-btn';
+        btn.style = "text-align:left; font-size:0.65rem; width:100%; justify-content:flex-start; line-height:1.4; padding:10px 14px;";
+        btn.innerHTML = `<span>[${String.fromCharCode(65 + idx)}]</span> ${opt}`;
+        btn.onclick = () => onChoiceSelect(idx);
+        choicesContainer.appendChild(btn);
+      });
+
+      // Reset AI console logs
+      const logContainer = document.getElementById('ai-console-log');
+      logContainer.innerHTML = `<div class="console-line console-sys">[SYSTEM] Ready. Golem redstone sensors calibrated.</div>`;
 
       startStopwatch();
     }
@@ -1195,7 +1264,7 @@
       isRunning = true;
       const display = document.getElementById('stopwatch-display');
       display.className = 'timer-hud-digits';
-      document.getElementById('stopwatch-hint').innerText = `Click a line on ${playerName}'s panel`;
+      document.getElementById('stopwatch-hint').innerText = `Select option to mine the block!`;
 
       timerInt = setInterval(() => {
         const now = Date.now();
@@ -1214,21 +1283,16 @@
       isRunning = false;
       const display = document.getElementById('stopwatch-display');
       display.classList.add('stopped');
-      document.getElementById('stopwatch-hint').innerText = `${playerName} locked in at ${humanSeconds}s`;
+      document.getElementById('stopwatch-hint').innerText = `${playerName} finished level in ${humanSeconds}s`;
     }
 
-    function onHumanClick(lineIdx) {
-      if (aiScanned) return; // Disallow edits after AI completes
-      
+    function onChoiceSelect(idx) {
+      if (aiScanned) return; // Disallow selecting after AI completes
       const ch = CHALLENGES[currentIdx];
-      const clickedEl = document.getElementById(`h-line-${lineIdx}`);
-
-      if (lineIdx === ch.vulnLineIdx) {
-        // Correct!
+      
+      if (idx === ch.correctOptionIdx) {
+        // Correct Choice! Mine the block!
         stopStopwatch();
-        clickedEl.classList.add('diamond-caught');
-        document.getElementById('steve-badge').innerText = `💎 Found in ${humanSeconds}s!`;
-        document.getElementById('steve-badge').style.background = '#2a801e';
         playMcSound('xp');
         
         // Award XP and Diamonds
@@ -1237,16 +1301,45 @@
         document.getElementById('header-player-xp').innerText = `⭐ ${playerXP} XP`;
         document.getElementById('header-player-dia').innerText = `💎 ${playerDiamonds}`;
         
-        showToast(`Level cleared! ${playerName} took ${humanSeconds} seconds.`);
-        updateGolemSpeech(`Incredible speed, ${playerName}! You caught it in ${humanSeconds}s. Now race me!`);
+        document.getElementById('steve-badge').innerText = `💎 Mined in ${humanSeconds}s!`;
+        document.getElementById('steve-badge').className = "arena-badge badge-steve done";
+        document.getElementById('steve-badge').style.background = '#2a801e';
+        
+        // Break Block animation: spin it fast and show confetti!
+        const blockEl = document.getElementById('mining-block');
+        if (blockEl) {
+          blockEl.style.transition = 'transform 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49)';
+          blockEl.style.transform = 'rotateX(360deg) rotateY(360deg) scale(0.2)';
+          confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+          
+          setTimeout(() => {
+            blockEl.style.transition = '';
+            blockEl.style.transform = '';
+          }, 600);
+        }
+
+        showToast(`Block successfully mined! +100 XP ⭐`);
+        updateGolemSpeech(`Incredible job, ${playerName}! You mined the block in ${humanSeconds}s. Now race me!`);
       } else {
-        // False Alarm!
-        clickedEl.classList.add('tnt-error');
+        // Incorrect Choice! Priming TNT explosion!
         playMcSound('tnt');
-        showToast("💥 False Positive! TNT penalty: +5 seconds");
-        startTime -= 5000;
-        updateGolemSpeech(`💥 Boom! False alarm, ${playerName}! Line ${lineIdx+1} is secure code!`);
-        setTimeout(() => { clickedEl.classList.remove('tnt-error'); }, 600);
+        
+        // Shake screen & turn block into TNT
+        const blockEl = document.getElementById('mining-block');
+        const cardEl = document.getElementById('arena-card-player');
+        if (blockEl) {
+          blockEl.className = "mc-block ore-tnt";
+          cardEl.classList.add('shake-screen');
+          
+          setTimeout(() => {
+            cardEl.classList.remove('shake-screen');
+            blockEl.className = `mc-block ore-${ch.blockType}`;
+          }, 600);
+        }
+
+        showToast("💥 KABOOM! Primed TNT exploded! +5s Penalty");
+        startTime -= 5000; // 5s penalty
+        updateGolemSpeech(`💥 Oh no, ${playerName}! That choice triggered a TNT trap! Try again!`);
       }
     }
 
@@ -1262,43 +1355,46 @@
       laser.className = 'mc-laser active';
       playMcSound('scan');
 
-      document.getElementById('ai-badge').innerText = "⚡ Mixture-of-Prompts Ingesting...";
-      updateGolemSpeech(`Golem is scanning AST tree nodes, ${playerName}...`);
+      document.getElementById('ai-badge').innerText = "⚡ Analyzing...";
+      document.getElementById('ai-badge').className = "arena-badge badge-bot done";
+      updateGolemSpeech(`Golem is scanning choices using Mixture-of-Prompts sensors...`);
+
+      logToConsole("Initializing choice AST parsing...", "sys");
 
       // Agent 1 AST (100ms)
       setTimeout(() => {
         document.getElementById('box-ast').className = 'agent-item-box active';
-        document.getElementById('status-ast').innerText = 'AST tree parsed';
+        document.getElementById('status-ast').innerText = 'AST parsed';
         playMcSound('click');
-        updateGolemSpeech(`Parsing complete! Crafting exploit simulation payload...`);
+        updateGolemSpeech(`AST complete. Analyzing adversarial threat patterns...`);
+        logToConsole("AST tree checked. Parsing input patterns.", "info");
       }, 100);
 
       // Agent 2 Threat (230ms)
       setTimeout(() => {
         document.getElementById('box-ast').className = 'agent-item-box done';
         document.getElementById('box-threat').className = 'agent-item-box active';
-        document.getElementById('status-threat').innerText = 'Exploit payload crafted';
+        document.getElementById('status-threat').innerText = 'Sim success';
         playMcSound('click');
-        updateGolemSpeech(`Exploit payload verified! Filtering false alarms, ${playerName}...`);
+        updateGolemSpeech(`Exploit checks complete. Running False Positive filters...`);
+        logToConsole("Threat simulation complete. Solution verified.", "info");
       }, 230);
 
       // Agent 3 False Alarm Filter (380ms)
       setTimeout(() => {
         document.getElementById('box-threat').className = 'agent-item-box done';
         document.getElementById('box-fp').className = 'agent-item-box done';
-        document.getElementById('status-fp').innerText = 'Confidence: 99.4% (Zero FP)';
+        document.getElementById('status-fp').innerText = 'FP filtered';
         laser.className = 'mc-laser'; // stop laser
 
-        const aiLine = document.getElementById(`ai-line-${ch.vulnLineIdx}`);
-        aiLine.classList.add('ai-scanned');
-
-        document.getElementById('ai-badge').innerText = "🛡️ 100% Bug Neutralized (0.38s)";
-        document.getElementById('ai-time-tag').innerText = "Latency: 380ms (Ultra-Fast)";
+        document.getElementById('ai-badge').innerText = "🛡️ Solved (0.38s)";
+        document.getElementById('ai-time-tag').innerText = "Latency: 380ms";
 
         playMcSound('xp');
         confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
 
-        updateGolemSpeech(`Aha! Isolated bug in 0.38 seconds. Can you keep up, ${playerName}?`);
+        logToConsole(`SUCCESS: Solved in 380ms. Correct answer: Option [${String.fromCharCode(65 + ch.correctOptionIdx)}]`, "success");
+        updateGolemSpeech(`Aha! Mined in 0.38s! Option [${String.fromCharCode(65 + ch.correctOptionIdx)}] is correct. Try to beat me next time, ${playerName}!`);
 
         showShowdown();
       }, 380);
@@ -1323,7 +1419,6 @@
 
     function switchChallenge() {
       if (currentIdx === CHALLENGES.length - 1) {
-        // Submit final score and bring in dashboard automatically!
         submitFinalScore();
         openLeaderboardModal(true);
       } else {
@@ -1445,23 +1540,23 @@
       playMcSound('click');
     }
 
-    const SPLASH_TEXTS = [
-      "Mixture-of-Prompts!",
-      "100% bug free!",
+    const SPLASH_TEXTS_TRIVIA = [
+      "Mine the Diamonds!",
+      "Watch for TNT!",
+      "Redstone Activated!",
+      "Golem approved!",
       "Creeper, aw man!",
-      "Also try PHP!",
-      "Spot the SQLi!",
-      "Diamond grade analysis!",
-      "Tenancy checked!",
-      "Oof!",
-      "Sssssssss...",
-      "Now with 8-bit sound!"
+      "Herobrine is watching!",
+      "Safe Mining!",
+      "2FA is OP!",
+      "Beware of prime TNT!",
+      "8-bit sound synth!"
     ];
 
     function initSplashText() {
       const splash = document.getElementById('splash-text');
       if (splash) {
-        const rand = SPLASH_TEXTS[Math.floor(Math.random() * SPLASH_TEXTS.length)];
+        const rand = SPLASH_TEXTS_TRIVIA[Math.floor(Math.random() * SPLASH_TEXTS_TRIVIA.length)];
         splash.innerText = rand;
       }
     }
