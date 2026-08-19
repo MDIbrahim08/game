@@ -685,6 +685,9 @@
       <button class="mc-btn mc-btn-diamond" onclick="playMcSound('click'); openQRModal()">
         📱 SCAN QR TO PLAY
       </button>
+      <button class="mc-btn mc-btn-diamond" style="background:#b08000; box-shadow:inset 3px 3px 0 #fdb813, inset -3px -3px 0 #5c4300, 0 3px 0 #000000; color:#ffff55; text-shadow: 2px 2px 0px #3f3f00;" onclick="playMcSound('click'); openLeaderboardModal()">
+        🏆 LEADERBOARD
+      </button>
       <button class="mc-btn" onclick="playMcSound('click'); toggleSound()">
         <span id="sound-icon">🔊</span> <span id="sound-label">AUDIO: ON</span>
       </button>
@@ -886,6 +889,27 @@
       <input type="text" id="player-name-input" value="Steve" style="width:100%; font-family:'Press Start 2P', monospace; font-size:0.75rem; padding:12px; border:4px solid #000; background:#141414; color:#ffff55; text-shadow:2px 2px 0 #000; text-align:center; box-shadow:inset -4px -4px 0 #333, inset 4px 4px 0 #000; margin-bottom:20px;" autofocus />
       <button class="mc-btn mc-btn-emerald" style="width:100%; font-size:0.75rem; justify-content:center;" onclick="joinGame()">
         JOIN ARENA ⚔️
+      </button>
+    </div>
+  </div>
+
+  <!-- Scoreboard Leaderboard Modal -->
+  <div class="modal-overlay" id="leaderboard-modal" onclick="closeLeaderboardModal(event)">
+    <div class="modal-mc" style="max-width: 440px;" onclick="event.stopPropagation()">
+      <button class="modal-close-mc" onclick="playMcSound('click'); closeLeaderboardModal()">&times;</button>
+      <h3 style="font-size:0.85rem; color:var(--mc-gold); text-shadow:var(--mc-text-shadow); margin-bottom:12px; text-align:center;">
+        🏆 ARENA LEADERBOARD 🏆
+      </h3>
+      <p style="font-family:'VT323', monospace; font-size:1.2rem; color:#ccc; text-align:center; margin-bottom:16px;">
+        Top players who dominated the AI Golem!
+      </p>
+
+      <div id="leaderboard-slots" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+        <!-- Slots populated dynamically -->
+      </div>
+
+      <button class="mc-btn mc-btn-diamond" style="width:100%; font-size:0.75rem; justify-content:center;" onclick="playMcSound('click'); closeLeaderboardModal()">
+        BACK TO GAME ⚔
       </button>
     </div>
   </div>
@@ -1298,8 +1322,14 @@
     }
 
     function switchChallenge() {
-      currentIdx = (currentIdx + 1) % CHALLENGES.length;
-      renderRound();
+      if (currentIdx === CHALLENGES.length - 1) {
+        // Submit final score and bring in dashboard automatically!
+        submitFinalScore();
+        openLeaderboardModal(true);
+      } else {
+        currentIdx = (currentIdx + 1) % CHALLENGES.length;
+        renderRound();
+      }
     }
 
     function resetCurrentRound() {
@@ -1330,6 +1360,91 @@
       playMcSound('click');
     }
 
+    // Leaderboard Scoreboard Dashboard Logic
+    function initLeaderboard() {
+      let leaderboard = JSON.parse(localStorage.getItem('codesecure_leaderboard'));
+      if (!leaderboard) {
+        leaderboard = [
+          { name: "HEROBRINE", xp: 300, diamonds: 3, time: 12.50 },
+          { name: "ALEX", xp: 200, diamonds: 2, time: 18.20 },
+          { name: "NOTCH", xp: 100, diamonds: 1, time: 28.90 }
+        ];
+        localStorage.setItem('codesecure_leaderboard', JSON.stringify(leaderboard));
+      }
+    }
+
+    function submitFinalScore() {
+      initLeaderboard();
+      let leaderboard = JSON.parse(localStorage.getItem('codesecure_leaderboard')) || [];
+      leaderboard.push({
+        name: playerName,
+        xp: playerXP,
+        diamonds: playerDiamonds,
+        time: parseFloat(humanSeconds) || 24.0,
+        date: new Date().toLocaleDateString()
+      });
+
+      // Sort by XP (descending) and time (ascending)
+      leaderboard.sort((a, b) => {
+        if (b.xp !== a.xp) return b.xp - a.xp;
+        if (b.diamonds !== a.diamonds) return b.diamonds - a.diamonds;
+        return a.time - b.time;
+      });
+
+      // Keep only top 5 scores
+      leaderboard = leaderboard.slice(0, 5);
+      localStorage.setItem('codesecure_leaderboard', JSON.stringify(leaderboard));
+    }
+
+    function openLeaderboardModal(isCelebration = false) {
+      initLeaderboard();
+      const modal = document.getElementById('leaderboard-modal');
+      modal.classList.add('open');
+
+      const slots = document.getElementById('leaderboard-slots');
+      slots.innerHTML = '';
+
+      const leaderboard = JSON.parse(localStorage.getItem('codesecure_leaderboard')) || [];
+      leaderboard.forEach((entry, rank) => {
+        const div = document.createElement('div');
+        if (rank === 0) {
+          // Gold / 1st Place
+          div.style = "display:flex; justify-content:space-between; align-items:center; background:#3b3117; border:3px solid #fdaa00; padding:10px 14px; box-shadow:inset 2px 2px 0 #5c4e1f;";
+          div.innerHTML = `<span style="color:#fdaa00; font-family:'Press Start 2P', monospace; font-size:0.55rem;">🥇 1ST: ${entry.name.toUpperCase()}</span>
+                           <span style="color:#ffff55; font-size:0.8rem; font-family:'Press Start 2P', monospace;">${entry.xp} XP</span>`;
+        } else if (rank === 1) {
+          // Iron / 2nd Place
+          div.style = "display:flex; justify-content:space-between; align-items:center; background:#292929; border:3px solid #adadad; padding:10px 14px; box-shadow:inset 2px 2px 0 #4a4a4a;";
+          div.innerHTML = `<span style="color:#adadad; font-family:'Press Start 2P', monospace; font-size:0.55rem;">🥈 2ND: ${entry.name.toUpperCase()}</span>
+                           <span style="color:#ffffff; font-size:0.8rem; font-family:'Press Start 2P', monospace;">${entry.xp} XP</span>`;
+        } else if (rank === 2) {
+          // Coal/Bronze / 3rd Place
+          div.style = "display:flex; justify-content:space-between; align-items:center; background:#2c2017; border:3px solid #ab5e29; padding:10px 14px; box-shadow:inset 2px 2px 0 #5c3519;";
+          div.innerHTML = `<span style="color:#ab5e29; font-family:'Press Start 2P', monospace; font-size:0.55rem;">🥉 3RD: ${entry.name.toUpperCase()}</span>
+                           <span style="color:#c9b09a; font-size:0.8rem; font-family:'Press Start 2P', monospace;">${entry.xp} XP</span>`;
+        } else {
+          // Simple Rank
+          div.style = "display:flex; justify-content:space-between; align-items:center; background:#1b1b1b; border:3px solid #000000; padding:8px 12px; box-shadow:inset 2px 2px 0 #111; opacity:0.8;";
+          div.innerHTML = `<span style="color:#888888; font-family:'Press Start 2P', monospace; font-size:0.5rem;">${rank + 1}TH: ${entry.name.toUpperCase()}</span>
+                           <span style="color:#888888; font-size:0.75rem; font-family:'Press Start 2P', monospace;">${entry.xp} XP</span>`;
+        }
+        slots.appendChild(div);
+      });
+
+      if (isCelebration) {
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
+        updateGolemSpeech(`Quest Complete, ${playerName}! Your score has been logged to the Scoreboard!`);
+        playMcSound('xp');
+      } else {
+        playMcSound('click');
+      }
+    }
+
+    function closeLeaderboardModal() {
+      document.getElementById('leaderboard-modal').classList.remove('open');
+      playMcSound('click');
+    }
+
     const SPLASH_TEXTS = [
       "Mixture-of-Prompts!",
       "100% bug free!",
@@ -1353,6 +1468,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       initSplashText();
+      initLeaderboard();
     });
   </script>
 </body>
