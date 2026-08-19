@@ -725,31 +725,22 @@
       display: block;
     }
 
-    #screen-start, #screen-scoreboard, #screen-monitor {
+    #screen-start, #screen-scoreboard {
       background: linear-gradient(to bottom, #72c6ef 0%, #008ed5 100%);
       border: 6px solid #5c3519;
       border-radius: 8px;
       box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
       padding: 2rem 1.5rem;
-      min-height: 85vh;
+      min-height: 80vh;
       display: none;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       box-sizing: border-box;
     }
 
-    #screen-start.active, #screen-scoreboard.active, #screen-monitor.active {
+    #screen-start.active, #screen-scoreboard.active {
       display: flex;
-    }
-
-    .monitor-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr 0.9fr;
-      gap: 16px;
-      width: 100%;
-      max-width: 1300px;
-      margin-top: 1rem;
     }
 
     /* Mobile Responsive Optimizations */
@@ -939,36 +930,26 @@
       </div>
     </div>
 
-    <div class="mc-box" style="max-width: 460px; width: 100%; margin: 0 auto; box-shadow: 0 20px 0 rgba(0,0,0,0.4);" onclick="event.stopPropagation()">
+    <div class="mc-box" style="max-width: 440px; width: 100%; margin: 0 auto; box-shadow: 0 20px 0 rgba(0,0,0,0.4);" onclick="event.stopPropagation()">
       <h3 style="font-size:0.85rem; color:#5c3519; margin-bottom:12px; text-align:center;">
         🏹 ENTER THE FLOCK 🏹
       </h3>
       <p style="font-family:'VT323', monospace; font-size:1.3rem; color:#5c3f2b; text-align:center; margin-bottom:14px;">
-        Choose your Bird name & Room code to play live!
+        Choose your Bird name to launch and pop hacker pigs!
       </p>
       
-      <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:10px; margin-bottom:16px;">
-        <div>
-          <label style="font-size:0.5rem; color:#5c3519; display:block; margin-bottom:4px;">GAMER TAG:</label>
-          <input type="text" id="player-name-input" value="Red" style="width:100%; font-family:'Press Start 2P', monospace; font-size:0.7rem; padding:10px; border:4px solid #5c3519; background:#fff8e7; color:#3e2715; text-align:center; box-shadow:inset -3px -3px 0 #ebd2ad, inset 3px 3px 0 #fff; box-sizing: border-box;" autofocus />
-        </div>
-        <div>
-          <label style="font-size:0.5rem; color:#5c3519; display:block; margin-bottom:4px;">ROOM CODE:</label>
-          <input type="text" id="room-code-input" value="BIRD" maxlength="6" style="width:100%; font-family:'Press Start 2P', monospace; font-size:0.7rem; padding:10px; border:4px solid #5c3519; background:#fff8e7; color:#d84315; text-align:center; box-shadow:inset -3px -3px 0 #ebd2ad, inset 3px 3px 0 #fff; box-sizing: border-box; text-transform:uppercase;" />
-        </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.5rem; color:#5c3519; display:block; margin-bottom:6px; text-align:center;">ENTER YOUR GAMER TAG:</label>
+        <input type="text" id="player-name-input" value="Red" style="width:100%; font-family:'Press Start 2P', monospace; font-size:0.75rem; padding:12px; border:4px solid #5c3519; background:#fff8e7; color:#3e2715; text-align:center; box-shadow:inset -3px -3px 0 #ebd2ad, inset 3px 3px 0 #fff; box-sizing: border-box;" autofocus />
       </div>
 
-      <button class="mc-btn mc-btn-emerald" style="width:100%; font-size:0.75rem; justify-content:center; padding:14px; margin-bottom:10px;" onclick="joinGame()">
+      <button class="mc-btn mc-btn-emerald" style="width:100%; font-size:0.75rem; justify-content:center; padding:14px; margin-bottom:12px;" onclick="joinGame()">
         LAUNCH GAME 🚀
-      </button>
-
-      <button class="mc-btn mc-btn-redstone" style="width:100%; font-size:0.6rem; justify-content:center; padding:12px; margin-bottom:12px;" onclick="openMonitorScreen()">
-        🖥️ HOST LIVE MONITOR (PROJECTOR)
       </button>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
         <button class="mc-btn mc-btn-diamond" style="font-size:0.6rem; justify-content:center;" onclick="playMcSound('click'); showScreen('scoreboard')">
-          🏆 HIGHSCORES
+          🏆 TOP SCORES
         </button>
         <button class="mc-btn mc-btn-diamond" style="font-size:0.6rem; justify-content:center;" onclick="playMcSound('click'); openQRModal()">
           📱 SCAN QR
@@ -1196,85 +1177,6 @@
       <button class="mc-btn mc-btn-diamond" style="width:100%; font-size:0.75rem; justify-content:center; padding:14px;" onclick="playMcSound('click'); goBackToStart()">
         BACK TO MENU ↩
       </button>
-    </div>
-  </div>
-
-  <!-- Screen 4: Live Class Monitor (Projector Dashboard) -->
-  <div class="mc-page-screen" id="screen-monitor">
-    <!-- Monitor Header Ribbon -->
-    <div class="mc-box" style="width:100%; max-width:1300px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1rem;">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div style="font-size:1.8rem;">📡</div>
-        <div>
-          <h2 style="font-size:0.95rem; color:#5c3519; margin:0;">LIVE CLASSROOM RADAR</h2>
-          <span style="font-size:0.55rem; color:#8b5a2b; font-family:'VT323', monospace; font-size:1.1rem;">REAL-TIME MULTIPLAYER FEED</span>
-        </div>
-      </div>
-
-      <!-- Live Room Pill -->
-      <div style="display:flex; align-items:center; gap:10px; background:#8b5a2b; border:3px solid #5c3519; padding:6px 14px; box-shadow:inset 2px 2px 0 #ab5e29; color:#fff;">
-        <span style="font-size:0.55rem;">ROOM:</span>
-        <span style="font-size:0.9rem; color:#ffeb3b; font-family:'Press Start 2P', monospace;" id="monitor-room-tag">BIRD</span>
-      </div>
-
-      <!-- Active Players Count -->
-      <div style="font-family:'Press Start 2P', monospace; font-size:0.6rem; color:#2e7d32; background:#c8e6c9; border:2px solid #2e7d32; padding:6px 12px;">
-        👥 <span id="monitor-player-count">0</span> STUDENTS JOINED
-      </div>
-
-      <button class="mc-btn mc-btn-diamond" style="font-size:0.65rem;" onclick="playMcSound('click'); goBackToStart()">
-        BACK TO MENU ↩
-      </button>
-    </div>
-
-    <!-- 3-Column Monitor Grid -->
-    <div class="monitor-grid">
-      <!-- Column 1: Active Players Live Progress -->
-      <div class="mc-box" style="display:flex; flex-direction:column; gap:10px;">
-        <h3 style="font-size:0.75rem; color:#5c3519; border-bottom:3px solid #ebd2ad; padding-bottom:8px; display:flex; justify-content:space-between;">
-          <span>🎯 ACTIVE MINERS</span>
-          <span style="font-size:0.55rem; color:#8b5a2b;">PROGRESS</span>
-        </h3>
-        <div id="monitor-players-list" style="display:flex; flex-direction:column; gap:8px; max-height:480px; overflow-y:auto;">
-          <div style="font-family:'VT323', monospace; font-size:1.3rem; color:#8b5a2b; text-align:center; padding:2rem 0;">
-            Waiting for students to join room...
-          </div>
-        </div>
-      </div>
-
-      <!-- Column 2: Live Podium & Fastest Players -->
-      <div class="mc-box" style="display:flex; flex-direction:column; gap:10px;">
-        <h3 style="font-size:0.75rem; color:#5c3519; border-bottom:3px solid #ebd2ad; padding-bottom:8px;">
-          🏆 FASTEST WINNERS PODIUM
-        </h3>
-        <div id="monitor-podium-list" style="display:flex; flex-direction:column; gap:8px;">
-          <div style="font-family:'VT323', monospace; font-size:1.3rem; color:#8b5a2b; text-align:center; padding:2rem 0;">
-            No winners yet. First to clear 3 levels wins!
-          </div>
-        </div>
-      </div>
-
-      <!-- Column 3: Projector QR Code & Live Event Feed -->
-      <div class="mc-box" style="display:flex; flex-direction:column; gap:12px; align-items:center;">
-        <h3 style="font-size:0.75rem; color:#5c3519; width:100%; border-bottom:3px solid #ebd2ad; padding-bottom:8px; text-align:center;">
-          📱 SCAN TO JOIN ROOM
-        </h3>
-
-        <!-- QR Code container for students looking at projector -->
-        <div id="monitor-qr-box" style="background:#fff; padding:10px; border:4px solid #5c3519; display:inline-block;"></div>
-
-        <div style="font-family:'VT323', monospace; font-size:1.1rem; color:#5c3f2b; word-break:break-all; text-align:center;" id="monitor-url-text">
-          Connecting to room...
-        </div>
-
-        <!-- Live Activity Stream Console -->
-        <div style="width:100%; display:flex; flex-direction:column; gap:6px;">
-          <div style="font-size:0.5rem; color:#5c3519;">🔴 LIVE FLOCK ACTIVITY:</div>
-          <div id="monitor-live-feed" style="background:#2c1b10; border:3px solid #000; height:180px; overflow-y:auto; padding:8px; font-family:'VT323', monospace; font-size:1.15rem; color:#a5d6a7; display:flex; flex-direction:column; gap:4px; box-shadow:inset 2px 2px 0 #000;">
-            <div style="color:#ffd54f;">[SYSTEM] Radar online. Listening on room channel...</div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1511,243 +1413,9 @@
       }
     }
 
-    function initRoomCode() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const roomParam = urlParams.get('room');
-      if (roomParam && roomParam.trim()) {
-        roomCode = roomParam.trim().toUpperCase().substring(0, 6);
-      } else {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        let r = "";
-        for (let i = 0; i < 4; i++) {
-          r += chars[Math.floor(Math.random() * chars.length)];
-        }
-        roomCode = r;
-      }
-      const roomInput = document.getElementById('room-code-input');
-      if (roomInput) roomInput.value = roomCode;
-    }
-
-    function getStudentRoomUrl() {
-      const base = window.location.origin + window.location.pathname;
-      return `${base}?room=${roomCode}`;
-    }
-
-    function sendLobbyEvent(type, extra = {}) {
-      if (!roomCode) return;
-      const topic = `secbirds_room_${roomCode.toLowerCase()}`;
-      const avatarEl = document.getElementById('player-avatar');
-      const avatar = avatarEl ? avatarEl.innerText : '🔴';
-      
-      const payload = {
-        id: playerName + '_' + Date.now(),
-        room: roomCode,
-        name: playerName,
-        avatar: avatar,
-        type: type, // 'join' | 'progress' | 'win' | 'penalty'
-        level: currentIdx + 1,
-        xp: playerXP,
-        eggs: playerDiamonds,
-        speed: humanSeconds || 0,
-        timestamp: new Date().toLocaleTimeString(),
-        ...extra
-      };
-
-      fetch(`https://ntfy.sh/${topic}`, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      }).catch(() => {});
-    }
-
-    // Monitor State & SSE Handlers
-    let monitorEventSource = null;
-    let lobbyPlayers = {};
-
-    function openMonitorScreen() {
-      const roomInput = document.getElementById('room-code-input');
-      if (roomInput && roomInput.value.trim()) {
-        roomCode = roomInput.value.trim().toUpperCase();
-      }
-      document.getElementById('monitor-room-tag').innerText = roomCode;
-      
-      showScreen('monitor');
-      playMcSound('click');
-      initMonitorStream();
-      renderMonitorQR();
-    }
-
-    function renderMonitorQR() {
-      const box = document.getElementById('monitor-qr-box');
-      if (!box) return;
-      box.innerHTML = '';
-      const url = getStudentRoomUrl();
-      document.getElementById('monitor-url-text').innerText = url;
-      
-      new QRCode(box, {
-        text: url,
-        width: 140,
-        height: 140,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.M
-      });
-    }
-
-    function initMonitorStream() {
-      if (monitorEventSource) {
-        monitorEventSource.close();
-      }
-      lobbyPlayers = {};
-      updateMonitorUI();
-      
-      const topic = `secbirds_room_${roomCode.toLowerCase()}`;
-      monitorEventSource = new EventSource(`https://ntfy.sh/${topic}/sse`);
-
-      logToMonitorFeed(`📡 Connected to classroom channel for Room: ${roomCode}`, '#ffd54f');
-
-      monitorEventSource.onmessage = (e) => {
-        try {
-          const sseData = JSON.parse(e.data);
-          if (sseData.event === 'message' && sseData.message) {
-            const event = JSON.parse(sseData.message);
-            handleMonitorEvent(event);
-          }
-        } catch (err) {}
-      };
-    }
-
-    function handleMonitorEvent(event) {
-      if (!event || !event.name) return;
-      const name = event.name;
-
-      if (!lobbyPlayers[name]) {
-        lobbyPlayers[name] = {
-          name: name,
-          avatar: event.avatar || '🔴',
-          level: event.level || 1,
-          xp: event.xp || 0,
-          eggs: event.eggs || 0,
-          lastSpeed: event.speed || 0,
-          totalTime: 0,
-          isWinner: false,
-          lastActive: Date.now()
-        };
-        logToMonitorFeed(`[JOIN] 🐦 ${name} entered the room!`, '#a5d6a7');
-      }
-
-      const p = lobbyPlayers[name];
-      p.avatar = event.avatar || p.avatar;
-      p.lastActive = Date.now();
-
-      if (event.type === 'progress') {
-        p.level = Math.max(p.level, event.level || 1);
-        p.xp = event.xp || p.xp;
-        p.eggs = event.eggs || p.eggs;
-        p.lastSpeed = event.speed || p.lastSpeed;
-        logToMonitorFeed(`[PROGRESS] 🎯 ${name} cleared Level ${p.level - 1} in ${event.speed}s!`, '#81d4fa');
-      } else if (event.type === 'win') {
-        p.level = 3;
-        p.isWinner = true;
-        p.xp = event.xp || p.xp;
-        p.eggs = event.eggs || p.eggs;
-        p.totalTime = event.totalTime || event.speed || p.lastSpeed;
-        logToMonitorFeed(`[WINNER] 🏆 ${name} CLEARED ALL 3 LEVELS in ${p.totalTime}s!`, '#ffeb3b');
-      } else if (event.type === 'penalty') {
-        logToMonitorFeed(`[TNT] 💥 ${name} detonated a TNT trap (+5s)!`, '#ff8a80');
-      }
-
-      updateMonitorUI();
-    }
-
-    function logToMonitorFeed(msg, color = '#a5d6a7') {
-      const feed = document.getElementById('monitor-live-feed');
-      if (!feed) return;
-      const line = document.createElement('div');
-      line.style.color = color;
-      line.innerText = msg;
-      feed.appendChild(line);
-      feed.scrollTop = feed.scrollHeight;
-    }
-
-    function updateMonitorUI() {
-      const playersList = document.getElementById('monitor-players-list');
-      const podiumList = document.getElementById('monitor-podium-list');
-      const countTag = document.getElementById('monitor-player-count');
-      
-      const players = Object.values(lobbyPlayers);
-      if (countTag) countTag.innerText = players.length;
-
-      if (!playersList || !podiumList) return;
-
-      // 1. Active Miners Grid
-      if (players.length === 0) {
-        playersList.innerHTML = `<div style="font-family:'VT323', monospace; font-size:1.3rem; color:#8b5a2b; text-align:center; padding:2rem 0;">Waiting for students to join room...</div>`;
-      } else {
-        playersList.innerHTML = '';
-        players.forEach(p => {
-          const div = document.createElement('div');
-          div.style = "display:flex; justify-content:space-between; align-items:center; background:#fff8e7; border:3px solid #5c3519; padding:8px 12px; box-shadow:inset 2px 2px 0 #fff; border-radius:4px;";
-          
-          const levelPercent = Math.min(100, Math.round(((p.level - 1) / 3) * 100));
-          div.innerHTML = `
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:1.2rem;">${p.avatar}</span>
-              <div>
-                <div style="font-size:0.6rem; color:#5c3519; font-family:'Press Start 2P', monospace;">${p.name}</div>
-                <div style="font-size:0.45rem; color:#8b5a2b; margin-top:2px;">${p.isWinner ? '🏆 COMPLETED' : `LEVEL ${p.level} / 3`} • ${p.xp} XP</div>
-              </div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-family:'VT323', monospace; font-size:1.1rem; color:#d84315;">${p.lastSpeed ? p.lastSpeed + 's' : 'Starting...'}</div>
-              <div style="width:60px; height:8px; background:#ebd2ad; border:2px solid #5c3519; border-radius:4px; overflow:hidden; margin-top:2px;">
-                <div style="width:${p.isWinner ? '100%' : Math.max(15, levelPercent) + '%'}; height:100%; background:#4caf50;"></div>
-              </div>
-            </div>
-          `;
-          playersList.appendChild(div);
-        });
-      }
-
-      // 2. Winners Podium
-      const winners = players.filter(p => p.isWinner);
-      winners.sort((a, b) => parseFloat(a.totalTime || 999) - parseFloat(b.totalTime || 999));
-
-      if (winners.length === 0) {
-        podiumList.innerHTML = `<div style="font-family:'VT323', monospace; font-size:1.3rem; color:#8b5a2b; text-align:center; padding:2rem 0;">No winners yet. First to clear 3 levels wins!</div>`;
-      } else {
-        podiumList.innerHTML = '';
-        winners.forEach((w, rank) => {
-          const div = document.createElement('div');
-          if (rank === 0) {
-            div.style = "display:flex; justify-content:space-between; align-items:center; background:#fff3e0; border:4px solid #f57c00; padding:10px 12px; box-shadow:inset 2px 2px 0 #ffe0b2; border-radius:4px;";
-            div.innerHTML = `<span style="color:#e65100; font-family:'Press Start 2P', monospace; font-size:0.6rem;">🥇 1ST: ${w.avatar} ${w.name}</span>
-                             <span style="color:#d84315; font-size:0.75rem; font-family:'Press Start 2P', monospace;">⚡ ${w.totalTime}s</span>`;
-          } else if (rank === 1) {
-            div.style = "display:flex; justify-content:space-between; align-items:center; background:#eceff1; border:4px solid #78909c; padding:10px 12px; box-shadow:inset 2px 2px 0 #cfd8dc; border-radius:4px;";
-            div.innerHTML = `<span style="color:#37474f; font-family:'Press Start 2P', monospace; font-size:0.6rem;">🥈 2ND: ${w.avatar} ${w.name}</span>
-                             <span style="color:#455a64; font-size:0.75rem; font-family:'Press Start 2P', monospace;">⚡ ${w.totalTime}s</span>`;
-          } else if (rank === 2) {
-            div.style = "display:flex; justify-content:space-between; align-items:center; background:#efebe9; border:4px solid #8d6e63; padding:10px 12px; box-shadow:inset 2px 2px 0 #d7ccc8; border-radius:4px;";
-            div.innerHTML = `<span style="color:#4e342e; font-family:'Press Start 2P', monospace; font-size:0.6rem;">🥉 3RD: ${w.avatar} ${w.name}</span>
-                             <span style="color:#5d4037; font-size:0.75rem; font-family:'Press Start 2P', monospace;">⚡ ${w.totalTime}s</span>`;
-          } else {
-            div.style = "display:flex; justify-content:space-between; align-items:center; background:#fff8e7; border:2px solid #5c3519; padding:8px 10px; border-radius:4px;";
-            div.innerHTML = `<span style="color:#5c3519; font-family:'Press Start 2P', monospace; font-size:0.55rem;">${rank + 1}TH: ${w.avatar} ${w.name}</span>
-                             <span style="color:#5c3519; font-size:0.65rem; font-family:'Press Start 2P', monospace;">${w.totalTime}s</span>`;
-          }
-          podiumList.appendChild(div);
-        });
-      }
-    }
-
     function showScreen(screenId) {
       const screens = document.querySelectorAll('.mc-page-screen');
       screens.forEach(s => s.classList.remove('active'));
-
-      if (screenId !== 'monitor' && monitorEventSource) {
-        monitorEventSource.close();
-        monitorEventSource = null;
-      }
 
       const target = document.getElementById(`screen-${screenId}`);
       if (target) {
@@ -1809,10 +1477,6 @@
       if (input && input.value.trim()) {
         playerName = input.value.trim();
       }
-      const roomIn = document.getElementById('room-code-input');
-      if (roomIn && roomIn.value.trim()) {
-        roomCode = roomIn.value.trim().toUpperCase();
-      }
 
       document.getElementById('header-player-tag').innerText = playerName.toUpperCase();
       
@@ -1824,14 +1488,12 @@
         humanCardTitle.innerText = `🐦 ${playerName} (Flock Leader)`;
       }
 
-      // Angry birds avatars
       const avatars = ["🔴", "🟡", "⚫", "🔵", "🦅", "🦉"];
       const randAvatar = avatars[Math.floor(Math.random() * avatars.length)];
       document.getElementById('player-avatar').innerText = randAvatar;
       
       showScreen('game');
       startBgm();
-      sendLobbyEvent('join');
       renderRound();
     }
 
@@ -2036,9 +1698,6 @@
         document.getElementById('steve-badge').innerText = `🎯 Popped in ${humanSeconds}s!`;
         document.getElementById('steve-badge').className = "arena-badge badge-steve done";
         document.getElementById('steve-badge').style.background = '#4caf50';
-        
-        // Broadcast Progress Event
-        sendLobbyEvent('progress', { level: currentIdx + 2, speed: humanSeconds });
 
         // Trigger Red Bird flight animation
         const bird = document.getElementById('red-bird');
@@ -2067,7 +1726,6 @@
         }, 2200);
       } else {
         playMcSound('tnt');
-        sendLobbyEvent('penalty');
         
         const bird = document.getElementById('red-bird');
         const pig = document.getElementById('green-pig');
@@ -2123,7 +1781,6 @@
     function switchChallenge() {
       if (currentIdx === CHALLENGES.length - 1) {
         submitFinalScore();
-        sendLobbyEvent('win', { totalTime: humanSeconds });
         showScreen('scoreboard');
         confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
         updateGolemSpeech(`Quest Complete, ${playerName}! Your score has been logged to the Scoreboard!`);
@@ -2142,7 +1799,7 @@
       document.getElementById('qr-modal').classList.add('open');
       const box = document.getElementById('qr-box');
       box.innerHTML = '';
-      const url = getStudentRoomUrl();
+      const url = window.location.href;
       document.getElementById('qr-link-text').innerText = url;
 
       new QRCode(box, {
@@ -2215,7 +1872,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      initRoomCode();
       initSplashText();
       initLeaderboard();
       showScreen('start');
