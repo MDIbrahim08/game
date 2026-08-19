@@ -1135,6 +1135,8 @@
         Top players who popped the Hacker Pigs!
       </p>
 
+      <div id="player-cert-container" style="display:none;"></div>
+
       <div id="leaderboard-slots" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
         <!-- Slots populated dynamically -->
       </div>
@@ -1264,7 +1266,7 @@
   <script>
     const CHALLENGES = [
       {
-        tag: "LEVEL 1 / 3",
+        tag: "LEVEL 1 / 5",
         cwe: "CWE-89: SQL Injection",
         title: "The Pig King's SQL Vault Heist",
         desc: "👑 <strong>The Pig King wrote this PHP code to lock his stolen egg vault:</strong><br/><div class='code-snippet'>$key = $_POST['key'];<br/>$sql = \"SELECT * FROM vault WHERE secret_pass = '$key'\";</div>Alex enters into the password box: <span style='color:#d84315; font-weight:bold;'>' OR 1=1 --</span><br/><br/><strong>What happens when this query runs?</strong>",
@@ -1282,7 +1284,7 @@
         fixedDesc: "Secure Prepared Statement:\n$stmt = $db->prepare('SELECT * FROM vault WHERE secret_pass = ?');\n$stmt->bind_param('s', $key);"
       },
       {
-        tag: "LEVEL 2 / 3",
+        tag: "LEVEL 2 / 5",
         cwe: "CWE-79: Reflected XSS",
         title: "The Sneaky Cookie Thief Script",
         desc: "🍪 <strong>Hacker Pig injected malicious script tags into the gamer chat room:</strong><br/><div class='code-snippet'>&lt;h2&gt;Welcome, &lt;?php echo $_GET['username']; ?&gt;!&lt;/h2&gt;</div>Hacker Pig sets their username to:<br/><span style='color:#d84315; font-weight:bold;'>&lt;script&gt;alert('Stealing cookies!')&lt;/script&gt;</span><br/><br/><strong>Why is this dangerous?</strong>",
@@ -1300,7 +1302,7 @@
         fixedDesc: "Secure HTML Escaping:\nWelcome, <?php echo htmlspecialchars($_GET['username'], ENT_QUOTES, 'UTF-8'); ?>!"
       },
       {
-        tag: "LEVEL 3 / 3",
+        tag: "LEVEL 3 / 5",
         cwe: "CWE-639: IDOR / Broken Auth",
         title: "The Unlimited Egg Reward Glitch",
         desc: "🥚 <strong>The Pig King's reward API allows claiming prize eggs without checking ownership:</strong><br/><div class='code-snippet'>function claimReward(player, eggId) {<br/>&nbsp;&nbsp;if (db.getEgg(eggId)) {<br/>&nbsp;&nbsp;&nbsp;&nbsp;player.addEgg(eggId); // ⚠️ No ownership check!<br/>&nbsp;&nbsp;}<br/>}</div><br/><strong>What catastrophic exploit is this?</strong>",
@@ -1316,6 +1318,42 @@
         pigFail: "KABOOM! 💥 TNT exploded! You forgot to check ownerId, haha!",
         vulDesc: "Vulnerable Exploit:\nplayer.addEgg(eggId) called without verifying player.id === egg.ownerId.",
         fixedDesc: "Secure Ownership Verification:\nconst egg = db.getEgg(eggId);\nif (egg && egg.ownerId === player.id) {\n  player.addEgg(eggId);\n}"
+      },
+      {
+        tag: "LEVEL 4 / 5",
+        cwe: "CWE-918: SSRF",
+        title: "The Internal Pig Radar Webhook",
+        desc: "🌐 <strong>Hacker Pig built a webhook tester to query server status:</strong><br/><div class='code-snippet'>function testWebhook(userUrl) {<br/>&nbsp;&nbsp;return http.get(userUrl); // ⚠️ No URL validation!<br/>}</div>Hacker Pig requests:<br/><span style='color:#d84315; font-weight:bold;'>http://localhost:8080/admin/delete_all_birds</span><br/><br/><strong>What security vulnerability is this?</strong>",
+        correctOptionIdx: 1,
+        options: [
+          "The router will overheat and spawn block items 💥 (TNT Trap!)",
+          "SSRF! The server requests internal local services that are hidden from the public! 🎯 (Launch Bird!)",
+          "It triggers an automatic backup to the Pig King's Google Drive 💥 (TNT Trap!)"
+        ],
+        hint: "Allowing users to make the server fetch arbitrary internal URLs bypasses firewalls!",
+        pigTaunt: "Oink! I can scan all your internal backend databases with my webhook tester! 😈",
+        pigWin: "SQUEAL! 😱 You restricted webhooks to a whitelist! My internal scan failed!",
+        pigFail: "BWAHAHAHA! 💥 TNT exploded! You didn't check if the URL was local!",
+        vulDesc: "Vulnerable Exploit:\nhttp.get('http://localhost:8080/admin/delete_all_birds') called unfiltered.",
+        fixedDesc: "Secure Whitelist Validation:\nif (!isPrivateIP(userUrl) && isWhitelistedDomain(userUrl)) {\n  http.get(userUrl);\n}"
+      },
+      {
+        tag: "LEVEL 5 / 5",
+        cwe: "CWE-798: Hardcoded Credentials",
+        title: "The Developer Pig's GitHub Blunder",
+        desc: "🔑 <strong>Developer Pig committed this configuration file to GitHub:</strong><br/><div class='code-snippet'>const AWS_ACCESS_KEY = 'AKIA_PIG_ADMIN_TOKEN_999';<br/>const AWS_SECRET_KEY = 'pig_secret_pass_12345';</div><strong>What is the best way to secure this configuration?</strong>",
+        correctOptionIdx: 0,
+        options: [
+          "Use Environment Variables (.env) and add the file to .gitignore! 🎯 (Launch Bird!)",
+          "Encrypt the secret key in brain-dead ROT13 cipher in code 💥 (TNT Trap!)",
+          "Change the password to a longer name like 'piggy_king_ultra_pass_999' 💥 (TNT Trap!)"
+        ],
+        hint: "Never commit raw credentials to source control. Load them at runtime from env variables!",
+        pigTaunt: "Oink! I scanned your public GitHub repo and found your secret AWS master tokens! 🔑",
+        pigWin: "NOOO! 💥 You revoked the tokens and moved them to env files! Oink!",
+        pigFail: "HAHAHA! 💥 Your AWS cloud is mine now! Thanks for the hardcoded secret!",
+        vulDesc: "Vulnerable Exploit:\nCredentials committed in plaintext inside the source repository.",
+        fixedDesc: "Secure Environment Loading:\nconst AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;\n// Added config.env to .gitignore"
       }
     ];
 
@@ -1325,6 +1363,7 @@
     let humanSeconds = 0;
     let isRunning = false;
     let roundSolved = false;
+    let showCert = false;
 
     // Player State Variables
     let playerName = "Red";
@@ -1430,13 +1469,36 @@
       if (!slots) return;
       slots.innerHTML = '';
 
+      // Render certificate if the player just won
+      const certContainer = document.getElementById('player-cert-container');
+      if (certContainer) {
+        if (showCert) {
+          certContainer.style.display = 'block';
+          certContainer.innerHTML = `
+            <div style="background: #fff8e7; border: 4px dashed #fdaa00; padding: 16px; text-align: center; border-radius: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
+              <span style="font-size: 2.2rem; display: block; margin-bottom: 4px;">🏆</span>
+              <h4 style="font-family: 'Press Start 2P', monospace; font-size: 0.65rem; color: #e65100; margin: 4px 0;">CERTIFICATE OF VALOR</h4>
+              <p style="font-family: 'VT323', monospace; font-size: 1.35rem; color: #5c3519; margin: 8px 0; line-height: 1.35;">
+                This certifies that <strong style="color: #d84315;">${playerName.toUpperCase()}</strong> successfully cleared all 5 secure coding challenges, patched the vulnerabilities, and popped the Hacker Pigs in <strong style="color: #2e7d32;">${humanSeconds}s</strong>!
+              </p>
+              <div style="font-family: 'Press Start 2P', monospace; font-size: 0.5rem; color: #795548; margin-top: 8px; border-top: 2px solid #ebd2ad; padding-top: 8px;">
+                🏅 CERTIFIED FLOCK DEFENDER 🏅
+              </div>
+            </div>
+          `;
+        } else {
+          certContainer.style.display = 'none';
+          certContainer.innerHTML = '';
+        }
+      }
+
       const leaderboard = JSON.parse(localStorage.getItem('codesecure_leaderboard')) || [];
       
       if (leaderboard.length === 0) {
         slots.innerHTML = `
           <div style="font-family:'VT323', monospace; font-size:1.35rem; color:#5c3f2b; text-align:center; padding:1.5rem 0.5rem; line-height:1.4;">
             No scores logged yet! 🎯<br/>
-            <span style="font-size:1.15rem; color:#8b5a2b;">Complete all 3 levels to claim 1st Place!</span>
+            <span style="font-size:1.15rem; color:#8b5a2b;">Complete all 5 levels to claim 1st Place!</span>
           </div>
         `;
         return;
@@ -1469,6 +1531,7 @@
       currentIdx = 0;
       playerXP = 0;
       playerDiamonds = 0;
+      showCert = false;
       document.getElementById('header-player-xp').innerText = `⭐ 0 XP`;
       document.getElementById('header-player-dia').innerText = `🥚 0`;
       showScreen('start');
@@ -1479,6 +1542,7 @@
       if (input && input.value.trim()) {
         playerName = input.value.trim();
       }
+      showCert = false;
 
       document.getElementById('header-player-tag').innerText = playerName.toUpperCase();
       
@@ -1672,6 +1736,7 @@
     function switchChallenge() {
       if (currentIdx === CHALLENGES.length - 1) {
         submitFinalScore();
+        showCert = true;
         showScreen('scoreboard');
         confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
         updateGolemSpeech(`Quest Complete, ${playerName}! Your score has been logged to the Scoreboard!`);
