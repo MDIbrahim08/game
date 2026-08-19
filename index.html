@@ -585,7 +585,7 @@
       white-space: pre-wrap;
     }
 
-    .modal-backdrop {
+    .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.8);
@@ -595,7 +595,7 @@
       z-index: 200;
     }
 
-    .modal-backdrop.open {
+    .modal-overlay.open {
       display: flex;
     }
 
@@ -671,6 +671,16 @@
       <div class="paper-pill">ASE 2025 iCodeReviewer</div>
       <div class="minecraft-splash" id="splash-text">Mixture-of-Prompts!</div>
     </div>
+
+    <!-- Player Stats HUD -->
+    <div style="display:flex; align-items:center; gap:12px; background:#151515; border:3px solid #000; padding:6px 12px; box-shadow:inset -2px -2px 0 #333, inset 2px 2px 0 #000; margin-right: auto; margin-left: 20px;">
+      <div style="width:24px; height:24px; background:#e0a96d; border:2px solid #000; display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:inset -2px -2px 0 #7c5835;" id="player-avatar">🧑</div>
+      <div style="font-size:0.55rem; text-shadow:var(--mc-text-shadow); line-height: 1.3;">
+        <span style="color:var(--mc-gold);" id="header-player-tag">STEVE</span><br/>
+        <span style="color:var(--mc-emerald);" id="header-player-xp">⭐ 0 XP</span> • <span style="color:var(--mc-diamond);" id="header-player-dia">💎 0</span>
+      </div>
+    </div>
+
     <div class="header-btns">
       <button class="mc-btn mc-btn-diamond" onclick="playMcSound('click'); openQRModal()">
         📱 SCAN QR TO PLAY
@@ -748,6 +758,23 @@
             <span>🤖 CodeSecure AI Golem</span>
           </div>
           <span class="arena-badge badge-bot" id="ai-badge">Mixture-of-Prompts Ready</span>
+        </div>
+
+        <!-- Dialogue Bubble -->
+        <div style="display:flex; gap:12px; align-items:flex-start; padding:10px 14px; background:#1a1a1a; border-bottom:4px solid #000;">
+          <div style="width:44px; height:44px; background:#8f9c8f; border:3px solid #000; box-shadow:inset 3px 3px 0 #a3bca3; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🤖</div>
+          <div style="position:relative; background:#ffffff; color:#000000; border:4px solid #000000; padding:8px 12px; font-family:'VT323', monospace; font-size:1.25rem; line-height:1.2; width:100%; box-shadow:4px 4px 0 rgba(0,0,0,0.4);">
+            <div style="position:absolute; left:-12px; top:12px; width:0; height:0; border-top:6px solid transparent; border-right:8px solid #000; border-bottom:6px solid transparent;"></div>
+            <div style="position:absolute; left:-8px; top:12px; width:0; height:0; border-top:6px solid transparent; border-right:8px solid #fff; border-bottom:6px solid transparent;"></div>
+            <span id="golem-speech-text">Challenge me to speed code reviews! Type your gamer tag to start.</span>
+          </div>
+        </div>
+
+        <!-- Quick Chat Commands -->
+        <div style="display:flex; gap:8px; padding:6px 14px; background:#151515; border-bottom:4px solid #000;">
+          <button class="mc-btn" style="font-size:0.55rem; padding:6px 10px; background:#4a4a4a;" onclick="askGolem('hint')">💡 HINT</button>
+          <button class="mc-btn" style="font-size:0.55rem; padding:6px 10px; background:#4a4a4a;" onclick="askGolem('explain')">📜 EXPLAIN</button>
+          <button class="mc-btn" style="font-size:0.55rem; padding:6px 10px; background:#4a4a4a;" onclick="askGolem('taunt')">⚔️ TAUNT</button>
         </div>
 
         <div class="code-scroll" id="ai-code-view">
@@ -843,6 +870,22 @@
 
       <button class="mc-btn mc-btn-diamond" style="width:100%; margin-top:1rem;" onclick="playMcSound('click'); closeQRModal()">
         BACK TO GAME
+      </button>
+    </div>
+  </div>
+
+  <!-- Join Modal -->
+  <div class="modal-overlay open" id="join-modal">
+    <div class="modal-mc" style="max-width: 420px;" onclick="event.stopPropagation()">
+      <h3 style="font-size:0.85rem; color:var(--mc-gold); text-shadow:var(--mc-text-shadow); margin-bottom:12px; text-align:center;">
+        ⚔️ ENTER ARENA ⚔️
+      </h3>
+      <p style="font-family:'VT323', monospace; font-size:1.3rem; color:#ccc; text-align:center; margin-bottom:14px;">
+        Enter your Gamer Tag to challenge the AI Golem!
+      </p>
+      <input type="text" id="player-name-input" value="Steve" style="width:100%; font-family:'Press Start 2P', monospace; font-size:0.75rem; padding:12px; border:4px solid #000; background:#141414; color:#ffff55; text-shadow:2px 2px 0 #000; text-align:center; box-shadow:inset -4px -4px 0 #333, inset 4px 4px 0 #000; margin-bottom:20px;" autofocus />
+      <button class="mc-btn mc-btn-emerald" style="width:100%; font-size:0.75rem; justify-content:center;" onclick="joinGame()">
+        JOIN ARENA ⚔️
       </button>
     </div>
   </div>
@@ -1008,6 +1051,70 @@
     let isRunning = false;
     let aiScanned = false;
 
+    // Player State Variables
+    let playerName = "Steve";
+    let playerXP = 0;
+    let playerDiamonds = 0;
+
+    function joinGame() {
+      const input = document.getElementById('player-name-input');
+      if (input && input.value.trim()) {
+        playerName = input.value.trim();
+      }
+      document.getElementById('join-modal').classList.remove('open');
+      document.getElementById('header-player-tag').innerText = playerName.toUpperCase();
+      
+      playMcSound('click');
+      updateGolemSpeech(`Greetings, ${playerName}! Find the security bug in the code. Race against my scan!`);
+      
+      // Update Steve card title to user's name
+      const humanCardTitle = document.querySelector('.arena-card:first-of-type .arena-title span');
+      if (humanCardTitle) {
+        humanCardTitle.innerText = `🧑 ${playerName} (Human Reviewer)`;
+      }
+
+      // Random avatar for player
+      const avatars = ["🧑", "👩", "🧙", "🥷", "👨‍🚀", "🤠", "🤖"];
+      const randAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+      document.getElementById('player-avatar').innerText = randAvatar;
+      
+      renderRound();
+    }
+
+    function updateGolemSpeech(text) {
+      const el = document.getElementById('golem-speech-text');
+      if (el) {
+        el.innerText = text;
+      }
+    }
+
+    function askGolem(action) {
+      playMcSound('click');
+      const ch = CHALLENGES[currentIdx];
+      if (action === 'hint') {
+        let hintMsg = "";
+        if (currentIdx === 0) {
+          hintMsg = "Look at line 5! Database SELECT query concatenates raw variables without sanitization.";
+        } else if (currentIdx === 1) {
+          hintMsg = "Check line 4! Search keyword is echoed directly back to the page header, causing XSS.";
+        } else if (currentIdx === 2) {
+          hintMsg = "Inspect line 4! findOne finds chest data using raw ID parameter, skipping ownerId check.";
+        }
+        updateGolemSpeech(`[HINT] Golem whispers: "${hintMsg}"`);
+      } else if (action === 'explain') {
+        updateGolemSpeech(`[EXPLAIN] Golem says: "${ch.cwe} allows inputs to break code syntax. Use Prepared Statements or HTML escape libraries!"`);
+      } else if (action === 'taunt') {
+        const taunts = [
+          `My CPU reviews code at lightspeed, ${playerName}! What takes you seconds takes me microseconds!`,
+          `You call that speed, ${playerName}? Slimes hop faster than your review!`,
+          `Warning: Human latency detected. Try updating your brain, ${playerName}!`,
+          `Be careful, ${playerName}! Too many false alarms will blow your score to pieces!`
+        ];
+        const randomTaunt = taunts[Math.floor(Math.random() * taunts.length)];
+        updateGolemSpeech(`[TAUNT] Golem sneers: "${randomTaunt}"`);
+      }
+    }
+
     function renderRound() {
       const ch = CHALLENGES[currentIdx];
       document.getElementById('round-level-tag').innerText = ch.tag;
@@ -1052,6 +1159,9 @@
         aiBox.appendChild(lineEl);
       });
 
+      // Update AI Golem speech to round challenge
+      updateGolemSpeech(`Level ${currentIdx + 1}: ${ch.title}. Find the bug, ${playerName}!`);
+
       startStopwatch();
     }
 
@@ -1061,7 +1171,7 @@
       isRunning = true;
       const display = document.getElementById('stopwatch-display');
       display.className = 'timer-hud-digits';
-      document.getElementById('stopwatch-hint').innerText = "Click a line on Steve's panel";
+      document.getElementById('stopwatch-hint').innerText = `Click a line on ${playerName}'s panel`;
 
       timerInt = setInterval(() => {
         const now = Date.now();
@@ -1080,10 +1190,12 @@
       isRunning = false;
       const display = document.getElementById('stopwatch-display');
       display.classList.add('stopped');
-      document.getElementById('stopwatch-hint').innerText = `Human locked in at ${humanSeconds}s`;
+      document.getElementById('stopwatch-hint').innerText = `${playerName} locked in at ${humanSeconds}s`;
     }
 
     function onHumanClick(lineIdx) {
+      if (aiScanned) return; // Disallow edits after AI completes
+      
       const ch = CHALLENGES[currentIdx];
       const clickedEl = document.getElementById(`h-line-${lineIdx}`);
 
@@ -1094,13 +1206,22 @@
         document.getElementById('steve-badge').innerText = `💎 Found in ${humanSeconds}s!`;
         document.getElementById('steve-badge').style.background = '#2a801e';
         playMcSound('xp');
-        showToast(`Level cleared! Human review took ${humanSeconds} seconds.`);
+        
+        // Award XP and Diamonds
+        playerXP += 100;
+        playerDiamonds += 1;
+        document.getElementById('header-player-xp').innerText = `⭐ ${playerXP} XP`;
+        document.getElementById('header-player-dia').innerText = `💎 ${playerDiamonds}`;
+        
+        showToast(`Level cleared! ${playerName} took ${humanSeconds} seconds.`);
+        updateGolemSpeech(`Incredible speed, ${playerName}! You caught it in ${humanSeconds}s. Now race me!`);
       } else {
         // False Alarm!
         clickedEl.classList.add('tnt-error');
         playMcSound('tnt');
         showToast("💥 False Positive! TNT penalty: +5 seconds");
         startTime -= 5000;
+        updateGolemSpeech(`💥 Boom! False alarm, ${playerName}! Line ${lineIdx+1} is secure code!`);
         setTimeout(() => { clickedEl.classList.remove('tnt-error'); }, 600);
       }
     }
@@ -1118,12 +1239,14 @@
       playMcSound('scan');
 
       document.getElementById('ai-badge').innerText = "⚡ Mixture-of-Prompts Ingesting...";
+      updateGolemSpeech(`Golem is scanning AST tree nodes, ${playerName}...`);
 
-      // Agent 1 AST (110ms)
+      // Agent 1 AST (100ms)
       setTimeout(() => {
         document.getElementById('box-ast').className = 'agent-item-box active';
         document.getElementById('status-ast').innerText = 'AST tree parsed';
         playMcSound('click');
+        updateGolemSpeech(`Parsing complete! Crafting exploit simulation payload...`);
       }, 100);
 
       // Agent 2 Threat (230ms)
@@ -1132,6 +1255,7 @@
         document.getElementById('box-threat').className = 'agent-item-box active';
         document.getElementById('status-threat').innerText = 'Exploit payload crafted';
         playMcSound('click');
+        updateGolemSpeech(`Exploit payload verified! Filtering false alarms, ${playerName}...`);
       }, 230);
 
       // Agent 3 False Alarm Filter (380ms)
@@ -1149,6 +1273,8 @@
 
         playMcSound('xp');
         confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+
+        updateGolemSpeech(`Aha! Isolated bug in 0.38 seconds. Can you keep up, ${playerName}?`);
 
         showShowdown();
       }, 380);
@@ -1226,7 +1352,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      renderRound();
       initSplashText();
     });
   </script>
