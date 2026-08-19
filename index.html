@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeSecure AI — Minecraft Edition: Human vs AI Speed Challenge</title>
+  
+  <!-- Pixel & Code Fonts from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Fira+Code:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti & QR Code Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    /* =========================================
+       MINECRAFT PIXEL ART THEME DESIGN SYSTEM
+       ========================================= */
+    :root {
+      --mc-dirt: #866043;
+      --mc-dirt-dark: #573d26;
+      --mc-grass-top: #5c8e32;
+      --mc-stone: #4e4e4e;
+      --mc-stone-light: #707070;
+      --mc-stone-dark: #2c2c2c;
+      --mc-wood: #9c7446;
+      --mc-obsidian: #100c1e;
+      --mc-diamond: #4dedf4;
+      --mc-emerald: #55ff55;
+      --mc-redstone: #ff2200;
+      --mc-gold: #fdaa00;
+      --mc-lapis: #2040ff;
+      --mc-text-shadow: 2px 2px 0px #000000;
+      --mc-btn-bg: #808080;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      image-rendering: pixelated;
+    }
+
+    body {
+      background-color: #121212;
+      /* Pixelated Bedrock & Dirt textured pattern */
+      background-image: 
+        radial-gradient(#1e1e24 15%, transparent 16%),
+        radial-gradient(#15151b 15%, transparent 16%);
+      background-size: 32px 32px;
+      background-position: 0 0, 16px 16px;
+      color: #ffffff;
+      font-family: 'Press Start 2P', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Top Minecraft Banner */
+    header {
+      background: #2b2b2b;
+      border-bottom: 4px solid #141414;
+      box-shadow: inset 0 4px 0 #4a4a4a, 0 4px 0 #000000;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mc-block-logo {
+      width: 44px;
+      height: 44px;
+      background: var(--mc-diamond);
+      border: 4px solid #000000;
+      box-shadow: inset 4px 4px 0 #a2fbff, inset -4px -4px 0 #1b8a92;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-size: 1.1rem;
+      color: var(--mc-diamond);
+      text-shadow: var(--mc-text-shadow);
+      letter-spacing: -1px;
+    }
+
+    .paper-pill {
+      font-size: 0.6rem;
+      background: #3c144e;
+      border: 2px solid #a855f7;
+      color: #e9d5ff;
+      padding: 4px 8px;
+      text-shadow: var(--mc-text-shadow);
+      box-shadow: inset 2px 2px 0 #7e22ce, inset -2px -2px 0 #240b33;
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* Minecraft Iconic Button Component */
+    .mc-btn {
+      background: #737373;
+      border: 3px solid #000000;
+      box-shadow: inset 3px 3px 0 #adadad, inset -3px -3px 0 #424242, 0 3px 0 #000000;
+      color: #ffffff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.65rem;
+      padding: 10px 14px;
+      cursor: pointer;
+      text-shadow: var(--mc-text-shadow);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+      transition: none;
+    }
+
+    .mc-btn:hover {
+      background: #8b8b8b;
+      box-shadow: inset 3px 3px 0 #c2c2c2, inset -3px -3px 0 #525252, 0 3px 0 #000000;
+    }
+
+    .mc-btn:active {
+      transform: translateY(3px);
+      box-shadow: inset 3px 3px 0 #424242, inset -3px -3px 0 #adadad;
+    }
+
+    .mc-btn-diamond {
+      background: #1b8a92;
+      box-shadow: inset 3px 3px 0 var(--mc-diamond), inset -3px -3px 0 #0c474b, 0 3px 0 #000000;
+      color: #ffffff;
+    }
+    .mc-btn-diamond:hover {
+      background: #24a9b3;
+    }
+
+    .mc-btn-emerald {
+      background: #2a801e;
+      box-shadow: inset 3px 3px 0 var(--mc-emerald), inset -3px -3px 0 #13440b, 0 3px 0 #000000;
+    }
+    .mc-btn-emerald:hover {
+      background: #39a62a;
+    }
+
+    .mc-btn-redstone {
+      background: #960f00;
+      box-shadow: inset 3px 3px 0 var(--mc-redstone), inset -3px -3px 0 #470800, 0 3px 0 #000000;
+    }
+    .mc-btn-redstone:hover {
+      background: #ba1706;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Minecraft GUI Frame Box */
+    .mc-box {
+      background: #212121;
+      border: 4px solid #000000;
+      box-shadow: inset 4px 4px 0 #4a4a4a, inset -4px -4px 0 #121212, 0 6px 0 #000000;
+      padding: 1.2rem 1.5rem;
+      position: relative;
+    }
+
+    /* Status Banner / XP Bar */
+    .mission-panel {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1.1fr;
+      gap: 1.2rem;
+      align-items: center;
+      background: #2c251d;
+      border-color: #000;
+      box-shadow: inset 4px 4px 0 #5c4a38, inset -4px -4px 0 #181410, 0 6px 0 #000000;
+    }
+
+    .mission-header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .xp-level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.6rem;
+      color: var(--mc-emerald);
+      text-shadow: var(--mc-text-shadow);
+      background: #142a12;
+      border: 2px solid var(--mc-emerald);
+      padding: 4px 8px;
+      width: fit-content;
+    }
+
+    .mission-title {
+      font-size: 1rem;
+      color: var(--mc-gold);
+      text-shadow: var(--mc-text-shadow);
+      line-height: 1.4;
+    }
+
+    .mission-prompt {
+      font-family: 'VT323', monospace;
+      font-size: 1.3rem;
+      color: #d1d5db;
+      line-height: 1.2;
+    }
+
+    /* Minecraft Timer / Clock HUD */
+    .timer-hud {
+      background: #100c1e;
+      border: 3px solid #000000;
+      box-shadow: inset 3px 3px 0 #2a1f49, inset -3px -3px 0 #06040d;
+      padding: 10px 14px;
+      text-align: center;
+    }
+
+    .timer-hud-label {
+      font-size: 0.55rem;
+      color: var(--mc-diamond);
+      text-shadow: var(--mc-text-shadow);
+      margin-bottom: 4px;
+    }
+
+    .timer-hud-digits {
+      font-family: 'VT323', monospace;
+      font-size: 3rem;
+      color: var(--mc-gold);
+      text-shadow: 3px 3px 0 #000000;
+      line-height: 1;
+    }
+
+    .timer-hud-digits.stopped {
+      color: var(--mc-redstone);
+    }
+
+    .timer-hud-digits.ai-win {
+      color: var(--mc-emerald);
+      animation: pulseWin 0.5s infinite alternate;
+    }
+
+    @keyframes pulseWin {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    /* Dual Arena */
+    .arena-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .arena-card {
+      background: #1e1e1e;
+      border: 4px solid #000000;
+      box-shadow: inset 4px 4px 0 #3a3a3a, inset -4px -4px 0 #101010, 0 6px 0 #000000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .arena-header {
+      background: #333333;
+      border-bottom: 3px solid #000000;
+      box-shadow: inset 0 3px 0 #555555;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .arena-title {
+      font-size: 0.75rem;
+      text-shadow: var(--mc-text-shadow);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .arena-badge {
+      font-size: 0.55rem;
+      padding: 3px 6px;
+      border: 2px solid #000000;
+      text-shadow: var(--mc-text-shadow);
+    }
+
+    .badge-steve {
+      background: #0084ff;
+      color: #ffffff;
+    }
+
+    .badge-bot {
+      background: var(--mc-emerald);
+      color: #000000;
+      font-weight: 900;
+    }
+
+    /* Code Container in Minecraft Scroll Box */
+    .code-scroll {
+      background: #0c0d12;
+      padding: 1rem 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      flex: 1;
+      overflow-x: auto;
+      user-select: none;
+      position: relative;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+      padding: 4px 1rem;
+      cursor: pointer;
+      border-left: 4px solid transparent;
+    }
+
+    .code-line:hover {
+      background: #1b202c;
+      border-left-color: var(--mc-gold);
+    }
+
+    .line-num {
+      width: 32px;
+      color: #555c6e;
+      text-align: right;
+      margin-right: 14px;
+      font-family: 'VT323', monospace;
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    .line-code {
+      color: #e2e8f0;
+      white-space: pre;
+    }
+
+    /* Syntax Highlighting */
+    .kwd { color: #ff79c6; font-weight: bold; }
+    .var { color: #8be9fd; }
+    .str { color: #50fa7b; }
+    .fnc { color: #f1fa8c; }
+    .cmt { color: #6272a4; font-style: italic; }
+
+    /* Selection Reactions */
+    .code-line.tnt-error {
+      background: rgba(255, 34, 0, 0.35) !important;
+      border-left-color: var(--mc-redstone) !important;
+      animation: mcShake 0.25s ease-in-out 2;
+    }
+
+    .code-line.diamond-caught {
+      background: rgba(85, 255, 85, 0.3) !important;
+      border-left-color: var(--mc-emerald) !important;
+    }
+
+    .code-line.ai-scanned {
+      background: rgba(77, 237, 244, 0.3) !important;
+      border-left-color: var(--mc-diamond) !important;
+      box-shadow: inset 0 0 10px rgba(77, 237, 244, 0.5);
+    }
+
+    @keyframes mcShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    /* Redstone / Mixture of Prompts Multi-Agent HUD */
+    .redstone-pipeline {
+      background: #151515;
+      border-top: 3px solid #000000;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .pipeline-header {
+      font-size: 0.55rem;
+      color: var(--mc-diamond);
+      text-shadow: var(--mc-text-shadow);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .agent-crafting-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .agent-item-box {
+      background: #262626;
+      border: 3px solid #000000;
+      box-shadow: inset 2px 2px 0 #3a3a3a, inset -2px -2px 0 #151515;
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .agent-item-box.active {
+      border-color: var(--mc-gold);
+      background: #3b321a;
+      box-shadow: inset 2px 2px 0 var(--mc-gold);
+    }
+
+    .agent-item-box.done {
+      border-color: var(--mc-emerald);
+      background: #122b10;
+      box-shadow: inset 2px 2px 0 var(--mc-emerald);
+    }
+
+    .agent-title {
+      font-size: 0.52rem;
+      color: #ffffff;
+      text-shadow: var(--mc-text-shadow);
+    }
+
+    .agent-status-text {
+      font-family: 'VT323', monospace;
+      font-size: 0.95rem;
+      color: #aaaaaa;
+    }
+
+    /* Scanner Laser */
+    .mc-laser {
+      position: absolute;
+      left: 0; right: 0;
+      height: 4px;
+      background: var(--mc-diamond);
+      box-shadow: 0 0 10px var(--mc-diamond), 0 0 20px var(--mc-emerald);
+      display: none;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .mc-laser.active {
+      display: block;
+      animation: laserSweep 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes laserSweep {
+      0% { top: 5%; }
+      100% { top: 90%; }
+    }
+
+    /* Showdown Scoreboard / Victory Panel */
+    .showdown-box {
+      background: #2b1f13;
+      border: 4px solid #000000;
+      box-shadow: inset 4px 4px 0 #5c4228, inset -4px -4px 0 #161009, 0 6px 0 #000000;
+      padding: 1.5rem;
+      display: none;
+      flex-direction: column;
+      gap: 1.2rem;
+      animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    .showdown-box.active {
+      display: flex;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .stats-mc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .stat-slot {
+      background: #1a130c;
+      border: 3px solid #000000;
+      box-shadow: inset 3px 3px 0 #2e2116, inset -3px -3px 0 #0b0805;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-slot-label {
+      font-size: 0.5rem;
+      color: #c9b09a;
+      text-shadow: var(--mc-text-shadow);
+      margin-bottom: 4px;
+    }
+
+    .stat-slot-val {
+      font-family: 'VT323', monospace;
+      font-size: 2.2rem;
+      text-shadow: 2px 2px 0 #000000;
+    }
+
+    .val-human { color: var(--mc-redstone); }
+    .val-ai { color: var(--mc-diamond); }
+    .val-speed { color: var(--mc-emerald); }
+    .val-f1 { color: var(--mc-gold); }
+
+    .patch-slots {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .patch-subslot {
+      gap: 1.2rem;
+    }
+
+    .stat-box {
+      background: #141414;
+      border: 4px solid #000000;
+      box-shadow: inset 4px 4px 0px #080808;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-top: 8px;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    .stat-human { color: var(--neon-red); text-shadow: 2px 2px 0px #4d100d; }
+    .stat-ai { color: var(--neon-cyan); text-shadow: 2px 2px 0px #0e4c50; }
+    .stat-speed { color: var(--neon-green); text-shadow: 2px 2px 0px #243d11; }
+    .stat-f1 { color: var(--neon-purple); text-shadow: 2px 2px 0px #3d1b50; }
+
+    .patch-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      background: #141414;
+      border: 4px solid #000000;
+      box-shadow: inset 4px 4px 0px #080808;
+      padding: 1rem 1.4rem;
+    }
+
+    .patch-box h4 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.65rem;
+      margin-bottom: 8px;
+    }
+
+    .patch-vuln h4 { color: var(--neon-red); }
+    .patch-fixed h4 { color: var(--neon-green); }
+
+    .patch-code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #2c2c2c;
+      border: 4px solid #000000;
+      box-shadow: inset -4px -4px 0px #151515, inset 4px 4px 0px #555555, 0 20px 0px rgba(0,0,0,0.5);
+      padding: 2rem;
+      max-width: 450px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .qr-mc-container {
+      background: #ffffff;
+      padding: 12px;
+      border: 4px solid #000000;
+      box-shadow: inset -4px -4px 0px #adadad, inset 4px 4px 0px #ffffff;
+      display: inline-block;
+      margin: 1rem 0;
+    }
+
+    .minecraft-splash {
+      position: absolute;
+      top: 30px;
+      left: 170px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      color: #ffff55;
+      text-shadow: 2px 2px 0px #000000;
+      transform: rotate(-15deg);
+      animation: splashPulse 0.4s ease-in-out infinite alternate;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 10;
+    }
+
+    @keyframes splashPulse {
+      0% { transform: rotate(-15deg) scale(0.95); }
+      100% { transform: rotate(-15deg) scale(1.1); }
+    }
+
+    @media (max-width: 900px) {
+      .mission-panel { grid-template-columns: 1fr; }
+      .arena-grid { grid-template-columns: 1fr; }
+      .stats-mc-grid { grid-template-columns: 1fr 1fr; }
+      .patch-slots { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Minecraft Header Bar -->
+  <header>
+    <div class="logo-box" style="position: relative; margin-right: 40px;">
+      <div class="mc-block-logo">💎</div>
+      <div>
+        <div class="logo-text">CODESECURE AI</div>
+      </div>
+      <div class="paper-pill">ASE 2025 iCodeReviewer</div>
+      <div class="minecraft-splash" id="splash-text">Mixture-of-Prompts!</div>
+    </div>
+    <div class="header-btns">
+      <button class="mc-btn mc-btn-diamond" onclick="playMcSound('click'); openQRModal()">
+        📱 SCAN QR TO PLAY
+      </button>
+      <button class="mc-btn" onclick="playMcSound('click'); toggleSound()">
+        <span id="sound-icon">🔊</span> <span id="sound-label">AUDIO: ON</span>
+      </button>
+      <button class="mc-btn mc-btn-emerald" onclick="playMcSound('click'); switchChallenge()">
+        ⚔️ NEXT ROUND
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Game Arena -->
+  <main>
+    <!-- Top Mission / Objective Panel -->
+    <section class="mc-box mission-panel">
+      <div class="mission-header">
+        <div class="xp-level-badge">
+          <span>⚔️</span> <span id="round-level-tag">LEVEL 1 / 3</span> • <span id="cwe-id-tag">CWE-89</span>
+        </div>
+        <div class="mission-title" id="challenge-name">Spot the SQL Injection</div>
+        <div class="mission-prompt" id="challenge-desc">
+          Click the vulnerable line! Can a human beat the clock before the Creeper explodes?
+        </div>
+      </div>
+
+      <!-- Human Stopwatch HUD -->
+      <div class="timer-hud">
+        <div class="timer-hud-label">⏳ HUMAN REVIEW TIMER</div>
+        <div class="timer-hud-digits" id="stopwatch-display">00:00.00</div>
+        <div style="font-size:0.5rem; color:#888;" id="stopwatch-hint">
+          Click a line on Steve's panel
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="mc-btn mc-btn-diamond" style="font-size:0.75rem; padding:12px;" id="btn-trigger-ai" onclick="playMcSound('click'); triggerAIScan()">
+          ⚡ UNLEASH CODESECURE AI
+        </button>
+        <button class="mc-btn" style="justify-content:center;" onclick="playMcSound('click'); resetCurrentRound()">
+          ↺ RESTART CLOCK
+        </button>
+      </div>
+    </section>
+
+    <!-- Side-by-Side Dual Arena -->
+    <section class="arena-grid">
+
+      <!-- Panel 1: Steve / Human Player -->
+      <div class="arena-card">
+        <div class="arena-header">
+          <div class="arena-title">
+            <span>🧑 Steve (Human Reviewer)</span>
+          </div>
+          <span class="arena-badge badge-steve" id="steve-badge">Searching...</span>
+        </div>
+
+        <div class="code-scroll" id="human-code-view">
+          <!-- Lines generated dynamically -->
+        </div>
+
+        <div style="padding: 8px 14px; background:#111; font-size:0.55rem; color:#888; border-top:2px solid #000;">
+          💡 <em>Click the buggy line! TNT penalty (+5s) for false alarms.</em>
+        </div>
+      </div>
+
+      <!-- Panel 2: CodeSecure AI (Mixture of Prompts) -->
+      <div class="arena-card" style="position:relative;">
+        <div class="mc-laser" id="ai-laser-beam"></div>
+
+        <div class="arena-header">
+          <div class="arena-title">
+            <span>🤖 CodeSecure AI Golem</span>
+          </div>
+          <span class="arena-badge badge-bot" id="ai-badge">Mixture-of-Prompts Ready</span>
+        </div>
+
+        <div class="code-scroll" id="ai-code-view">
+          <!-- AI highlighted code generated dynamically -->
+        </div>
+
+        <!-- Multi-Agent Crafting Grid -->
+        <div class="redstone-pipeline">
+          <div class="pipeline-header">
+            <span>⚡ REDSTONE MIXTURE-OF-PROMPTS AGENTS</span>
+            <span id="ai-time-tag">Latency: 0ms</span>
+          </div>
+          <div class="agent-crafting-grid">
+            <div class="agent-item-box" id="box-ast">
+              <div class="agent-title">1. AST Inspector</div>
+              <div class="agent-status-text" id="status-ast">Idle</div>
+            </div>
+            <div class="agent-item-box" id="box-threat">
+              <div class="agent-title">2. Threat Simulator</div>
+              <div class="agent-status-text" id="status-threat">Idle</div>
+            </div>
+            <div class="agent-item-box" id="box-fp">
+              <div class="agent-title">3. False Alarm Filter</div>
+              <div class="agent-status-text" id="status-fp">Idle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Victory / Showdown Scoreboard -->
+    <section class="showdown-box" id="showdown-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-size:0.9rem; color:var(--mc-gold); text-shadow:var(--mc-text-shadow);">
+          🏆 QUEST COMPLETE: HEAD-TO-HEAD STATS
+        </h3>
+        <button class="mc-btn mc-btn-emerald" onclick="playMcSound('click'); switchChallenge()">
+          NEXT LEVEL ➔
+        </button>
+      </div>
+
+      <!-- Minecraft Scoreboard Slots -->
+      <div class="stats-mc-grid">
+        <div class="stat-slot">
+          <div class="stat-slot-label">HUMAN REVIEW TIME</div>
+          <div class="stat-slot-val val-human" id="score-human-time">22.4s</div>
+        </div>
+        <div class="stat-slot">
+          <div class="stat-slot-label">CODESECURE AI TIME</div>
+          <div class="stat-slot-val val-ai" id="score-ai-time">0.38s</div>
+        </div>
+        <div class="stat-slot">
+          <div class="stat-slot-label">SPEED MULTIPLIER</div>
+          <div class="stat-slot-val val-speed" id="score-speed-mult">59x Faster ⚡</div>
+        </div>
+        <div class="stat-slot">
+          <div class="stat-slot-label">ASE 2025 F1 / ACCEPT</div>
+          <div class="stat-slot-val val-f1">63.98% / 84%</div>
+        </div>
+      </div>
+
+      <!-- Side-by-Side Patch Blueprint -->
+      <div class="patch-slots">
+        <div class="patch-subslot vuln">
+          <h4>🚨 Vulnerable Exploit Path</h4>
+          <div class="patch-code-txt" id="txt-vuln-exploit">...</div>
+        </div>
+        <div class="patch-subslot fixed">
+          <h4>🛡️ CodeSecure AI Auto-Crafted Patch</h4>
+          <div class="patch-code-txt" id="txt-fix-patch">...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Minecraft Styled QR Modal -->
+  <div class="modal-overlay" id="qr-modal" onclick="closeQRModal(event)">
+    <div class="modal-mc" onclick="event.stopPropagation()">
+      <button class="modal-close-mc" onclick="playMcSound('click'); closeQRModal()">&times;</button>
+      <h3 style="font-size:0.85rem; color:var(--mc-gold); text-shadow:var(--mc-text-shadow); margin-bottom:6px;">
+        📱 SCAN TO JOIN THE GAME
+      </h3>
+      <p style="font-family:'VT323', monospace; font-size:1.2rem; color:#ccc;">
+        Scan with your mobile camera to play live!
+      </p>
+
+      <div class="qr-mc-container" id="qr-box"></div>
+
+      <div style="font-family:'VT323', monospace; font-size:1.1rem; color:#aaa; word-break:break-all;" id="qr-link-text">
+        Generating Netlify URL...
+      </div>
+
+      <button class="mc-btn mc-btn-diamond" style="width:100%; margin-top:1rem;" onclick="playMcSound('click'); closeQRModal()">
+        BACK TO GAME
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="mc-toast" id="mc-toast">Chat Message</div>
+
+  <!-- 8-Bit Web Audio Sound Generator (No external MP3s needed) -->
+  <script>
+    let audioCtx = null;
+    let audioOn = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function toggleSound() {
+      audioOn = !audioOn;
+      document.getElementById('sound-icon').innerText = audioOn ? '🔊' : '🔇';
+      document.getElementById('sound-label').innerText = audioOn ? 'AUDIO: ON' : 'AUDIO: OFF';
+      showToast(audioOn ? "Audio unmuted!" : "Audio muted!");
+    }
+
+    function playMcSound(type) {
+      if (!audioOn) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'click') {
+        // Crisp button click
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 0.05);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } else if (type === 'tnt') {
+        // Low rumble / explosion error
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.linearRampToValueAtTime(40, now + 0.3);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'xp') {
+        // High pitch ding (Minecraft level up / XP orb)
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + (i * 0.08));
+          gain.gain.setValueAtTime(0.15, now + (i * 0.08));
+          gain.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.08) + 0.2);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + (i * 0.08));
+          osc.stop(now + (i * 0.08) + 0.2);
+        });
+      } else if (type === 'scan') {
+        // Sci-fi / laser chirp
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1200, now);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.35);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('mc-toast');
+      toast.innerText = `> ${msg}`;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2600);
+    }
+  </script>
+
+  <!-- Game Challenges & Engine -->
+  <script>
+    const CHALLENGES = [
+      {
+        tag: "LEVEL 1 / 3",
+        cwe: "CWE-89: SQL Injection",
+        title: "Spot the SQL Injection Vulnerability",
+        desc: "A login handler queries user credentials. Which line contains the exploitable concatenation flaw?",
+        vulnLineIdx: 4, // 0-based index (line 5)
+        lines: [
+          { num: 1, text: `<span class="kwd">&lt;?php</span>` },
+          { num: 2, text: `<span class="var">$username</span> = <span class="var">$_POST</span>[<span class="str">'username'</span>];` },
+          { num: 3, text: `<span class="var">$password</span> = <span class="var">$_POST</span>[<span class="str">'password'</span>];` },
+          { num: 4, text: `<span class="cmt">// Direct database lookup for user credentials</span>` },
+          { num: 5, text: `<span class="var">$query</span> = <span class="str">"SELECT * FROM users WHERE user = '"</span> . <span class="var">$username</span> . <span class="str">"' AND pass = '"</span> . <span class="var">$password</span> . <span class="str">"'"</span>;` },
+          { num: 6, text: `<span class="var">$result</span> = <span class="fnc">mysqli_query</span>(<span class="var">$conn</span>, <span class="var">$query</span>);` },
+          { num: 7, text: `<span class="kwd">if</span> (<span class="fnc">mysqli_num_rows</span>(<span class="var">$result</span>) &gt; <span class="str">0</span>) {` },
+          { num: 8, text: `    <span class="kwd">echo</span> <span class="str">"Login successful! Welcome to the server."</span>;` },
+          { num: 9, text: `}` }
+        ],
+        vulnDesc: "$query = \"SELECT * FROM users WHERE user = '\" . $username ...\nAttacker input like \"admin' --\" comments out password checking entirely!",
+        fixedDesc: "$stmt = $conn->prepare(\"SELECT id, pass_hash FROM users WHERE user = ?\");\n$stmt->bind_param(\"s\", $username);\n$stmt->execute();"
+      },
+      {
+        tag: "LEVEL 2 / 3",
+        cwe: "CWE-79: Reflected XSS",
+        title: "Spot the Reflected XSS Script Injection",
+        desc: "A leaderboard search returns user query directly to the DOM. Which line executes arbitrary script?",
+        vulnLineIdx: 3, // 0-based index (line 4)
+        lines: [
+          { num: 1, text: `<span class="kwd">function</span> <span class="fnc">renderSearchHeader</span>() {` },
+          { num: 2, text: `    <span class="var">$searchQuery</span> = <span class="var">$_GET</span>[<span class="str">'q'</span>] ?? <span class="str">''</span>;` },
+          { num: 3, text: `    <span class="var">$players</span> = <span class="fnc">getMatchingPlayers</span>(<span class="var">$searchQuery</span>);` },
+          { num: 4, text: `    <span class="kwd">echo</span> <span class="str">"&lt;h2 class='results'&gt;Search for: "</span> . <span class="var">$searchQuery</span> . <span class="str">"&lt;/h2&gt;"</span>;` },
+          { num: 5, text: `    <span class="kwd">foreach</span> (<span class="var">$players</span> <span class="kwd">as</span> <span class="var">$p</span>) {` },
+          { num: 6, text: `        <span class="kwd">echo</span> <span class="str">"&lt;p&gt;"</span> . <span class="fnc">htmlspecialchars</span>(<span class="var">$p</span>[<span class="str">'name'</span>]) . <span class="str">"&lt;/p&gt;"</span>;` },
+          { num: 7, text: `    }` },
+          { num: 8, text: `}` }
+        ],
+        vulnDesc: "echo \"<h2 class='results'>Search for: \" . $searchQuery ...\nDirect reflected output allows attackers to inject malicious JS tokens.",
+        fixedDesc: "echo \"<h2 class='results'>Search for: \" . htmlspecialchars($searchQuery, ENT_QUOTES, 'UTF-8') . \"</h2>\";"
+      },
+      {
+        tag: "LEVEL 3 / 3",
+        cwe: "CWE-639: Broken Object Level Auth (IDOR)",
+        title: "Spot the Insecure Direct Object Reference",
+        desc: "A player inventory API fetches diamond armor data. Which line forgets to verify owner tenancy?",
+        vulnLineIdx: 3, // 0-based index (line 4)
+        lines: [
+          { num: 1, text: `<span class="kwd">app</span>.<span class="fnc">get</span>(<span class="str">'/api/chest/:chestId'</span>, <span class="kwd">async</span> (req, res) =&gt; {` },
+          { num: 2, text: `    <span class="kwd">const</span> authenticatedPlayer = req.session.playerId;` },
+          { num: 3, text: `    <span class="kwd">const</span> chestId = req.params.chestId;` },
+          { num: 4, text: `    <span class="kwd">const</span> chest = <span class="kwd">await</span> db.chests.<span class="fnc">findOne</span>({ _id: chestId });` },
+          { num: 5, text: `    <span class="kwd">if</span> (!chest) <span class="kwd">return</span> res.<span class="fnc">status</span>(<span class="str">404</span>).<span class="fnc">send</span>(<span class="str">'Chest Missing'</span>);` },
+          { num: 6, text: `    res.<span class="fnc">json</span>(chest);` },
+          { num: 7, text: `});` }
+        ],
+        vulnDesc: "const chest = await db.chests.findOne({ _id: chestId });\nMissing owner check! Any player can loot any other player's chest by altering the ID.",
+        fixedDesc: "const chest = await db.chests.findOne({\n    _id: chestId,\n    ownerId: authenticatedPlayer // Enforces chest ownership check\n});"
+      }
+    ];
+
+    let currentIdx = 0;
+    let timerInt = null;
+    let startTime = 0;
+    let humanSeconds = 0;
+    let isRunning = false;
+    let aiScanned = false;
+
+    function renderRound() {
+      const ch = CHALLENGES[currentIdx];
+      document.getElementById('round-level-tag').innerText = ch.tag;
+      document.getElementById('cwe-id-tag').innerText = ch.cwe;
+      document.getElementById('challenge-name').innerText = ch.title;
+      document.getElementById('challenge-desc').innerText = ch.desc;
+
+      aiScanned = false;
+      document.getElementById('steve-badge').innerText = "Searching...";
+      document.getElementById('steve-badge').className = "arena-badge badge-steve";
+      document.getElementById('ai-badge').innerText = "Mixture-of-Prompts Ready";
+      document.getElementById('ai-badge').className = "arena-badge badge-bot";
+      document.getElementById('btn-trigger-ai').disabled = false;
+      document.getElementById('showdown-panel').classList.remove('active');
+
+      ['ast', 'threat', 'fp'].forEach(id => {
+        document.getElementById(`box-${id}`).className = 'agent-item-box';
+        document.getElementById(`status-${id}`).innerText = 'Idle';
+      });
+      document.getElementById('ai-time-tag').innerText = 'Latency: 0ms';
+
+      // Human Box
+      const humanBox = document.getElementById('human-code-view');
+      humanBox.innerHTML = '';
+      ch.lines.forEach((line, idx) => {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'code-line';
+        lineEl.id = `h-line-${idx}`;
+        lineEl.innerHTML = `<span class="line-num">${line.num}</span><span class="line-code">${line.text}</span>`;
+        lineEl.onclick = () => onHumanClick(idx);
+        humanBox.appendChild(lineEl);
+      });
+
+      // AI Box
+      const aiBox = document.getElementById('ai-code-view');
+      aiBox.innerHTML = '';
+      ch.lines.forEach((line, idx) => {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'code-line';
+        lineEl.id = `ai-line-${idx}`;
+        lineEl.innerHTML = `<span class="line-num">${line.num}</span><span class="line-code">${line.text}</span>`;
+        aiBox.appendChild(lineEl);
+      });
+
+      startStopwatch();
+    }
+
+    function startStopwatch() {
+      clearInterval(timerInt);
+      startTime = Date.now();
+      isRunning = true;
+      const display = document.getElementById('stopwatch-display');
+      display.className = 'timer-hud-digits';
+      document.getElementById('stopwatch-hint').innerText = "Click a line on Steve's panel";
+
+      timerInt = setInterval(() => {
+        const now = Date.now();
+        const diff = now - startTime;
+        humanSeconds = (diff / 1000).toFixed(2);
+        const mins = Math.floor(diff / 60000).toString().padStart(2, '0');
+        const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+        const ms = Math.floor((diff % 1000) / 10).toString().padStart(2, '0');
+        display.innerText = `${mins}:${secs}.${ms}`;
+      }, 30);
+    }
+
+    function stopStopwatch() {
+      if (!isRunning) return;
+      clearInterval(timerInt);
+      isRunning = false;
+      const display = document.getElementById('stopwatch-display');
+      display.classList.add('stopped');
+      document.getElementById('stopwatch-hint').innerText = `Human locked in at ${humanSeconds}s`;
+    }
+
+    function onHumanClick(lineIdx) {
+      const ch = CHALLENGES[currentIdx];
+      const clickedEl = document.getElementById(`h-line-${lineIdx}`);
+
+      if (lineIdx === ch.vulnLineIdx) {
+        // Correct!
+        stopStopwatch();
+        clickedEl.classList.add('diamond-caught');
+        document.getElementById('steve-badge').innerText = `💎 Found in ${humanSeconds}s!`;
+        document.getElementById('steve-badge').style.background = '#2a801e';
+        playMcSound('xp');
+        showToast(`Level cleared! Human review took ${humanSeconds} seconds.`);
+      } else {
+        // False Alarm!
+        clickedEl.classList.add('tnt-error');
+        playMcSound('tnt');
+        showToast("💥 False Positive! TNT penalty: +5 seconds");
+        startTime -= 5000;
+        setTimeout(() => { clickedEl.classList.remove('tnt-error'); }, 600);
+      }
+    }
+
+    function triggerAIScan() {
+      if (aiScanned) return;
+      aiScanned = true;
+      document.getElementById('btn-trigger-ai').disabled = true;
+
+      if (isRunning) stopStopwatch();
+
+      const ch = CHALLENGES[currentIdx];
+      const laser = document.getElementById('ai-laser-beam');
+      laser.className = 'mc-laser active';
+      playMcSound('scan');
+
+      document.getElementById('ai-badge').innerText = "⚡ Mixture-of-Prompts Ingesting...";
+
+      // Agent 1 AST (110ms)
+      setTimeout(() => {
+        document.getElementById('box-ast').className = 'agent-item-box active';
+        document.getElementById('status-ast').innerText = 'AST tree parsed';
+        playMcSound('click');
+      }, 100);
+
+      // Agent 2 Threat (230ms)
+      setTimeout(() => {
+        document.getElementById('box-ast').className = 'agent-item-box done';
+        document.getElementById('box-threat').className = 'agent-item-box active';
+        document.getElementById('status-threat').innerText = 'Exploit payload crafted';
+        playMcSound('click');
+      }, 230);
+
+      // Agent 3 False Alarm Filter (380ms)
+      setTimeout(() => {
+        document.getElementById('box-threat').className = 'agent-item-box done';
+        document.getElementById('box-fp').className = 'agent-item-box done';
+        document.getElementById('status-fp').innerText = 'Confidence: 99.4% (Zero FP)';
+        laser.className = 'mc-laser'; // stop laser
+
+        const aiLine = document.getElementById(`ai-line-${ch.vulnLineIdx}`);
+        aiLine.classList.add('ai-scanned');
+
+        document.getElementById('ai-badge').innerText = "🛡️ 100% Bug Neutralized (0.38s)";
+        document.getElementById('ai-time-tag').innerText = "Latency: 380ms (Ultra-Fast)";
+
+        playMcSound('xp');
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+
+        showShowdown();
+      }, 380);
+    }
+
+    function showShowdown() {
+      const ch = CHALLENGES[currentIdx];
+      const hTime = parseFloat(humanSeconds) || 24.0;
+      const aiTime = 0.38;
+      const speedup = Math.round(hTime / aiTime);
+
+      document.getElementById('score-human-time').innerText = `${hTime}s`;
+      document.getElementById('score-ai-time').innerText = `${aiTime}s`;
+      document.getElementById('score-speed-mult').innerText = `${speedup}x Faster ⚡`;
+
+      document.getElementById('txt-vuln-exploit').innerText = ch.vulDesc;
+      document.getElementById('txt-fix-patch').innerText = ch.fixedDesc;
+
+      document.getElementById('showdown-panel').classList.add('active');
+      document.getElementById('showdown-panel').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function switchChallenge() {
+      currentIdx = (currentIdx + 1) % CHALLENGES.length;
+      renderRound();
+    }
+
+    function resetCurrentRound() {
+      renderRound();
+    }
+
+    // QR Code Modal
+    function openQRModal() {
+      document.getElementById('qr-modal').classList.add('open');
+      const box = document.getElementById('qr-box');
+      box.innerHTML = '';
+      const url = window.location.href;
+      document.getElementById('qr-link-text').innerText = url;
+
+      new QRCode(box, {
+        text: url,
+        width: 190,
+        height: 190,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+      });
+      playMcSound('click');
+    }
+
+    function closeQRModal() {
+      document.getElementById('qr-modal').classList.remove('open');
+      playMcSound('click');
+    }
+
+    const SPLASH_TEXTS = [
+      "Mixture-of-Prompts!",
+      "100% bug free!",
+      "Creeper, aw man!",
+      "Also try PHP!",
+      "Spot the SQLi!",
+      "Diamond grade analysis!",
+      "Tenancy checked!",
+      "Oof!",
+      "Sssssssss...",
+      "Now with 8-bit sound!"
+    ];
+
+    function initSplashText() {
+      const splash = document.getElementById('splash-text');
+      if (splash) {
+        const rand = SPLASH_TEXTS[Math.floor(Math.random() * SPLASH_TEXTS.length)];
+        splash.innerText = rand;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderRound();
+      initSplashText();
+    });
+  </script>
+</body>
+</html>
