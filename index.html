@@ -762,48 +762,79 @@
 
     @media (max-width: 768px) {
       html {
-        font-size: 14px;
+        font-size: 13px;
+      }
+      body {
+        padding: 0.5rem;
+        padding-bottom: 4rem;
       }
       header {
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
         align-items: center;
-        padding: 12px;
+        padding: 8px 12px;
         text-align: center;
       }
       .logo-box {
         margin-right: 0 !important;
         margin-left: 0 !important;
         justify-content: center;
+        transform: scale(0.95);
       }
       .header-btns {
+        display: flex;
+        flex-direction: row;
         flex-wrap: wrap;
         justify-content: center;
         width: 100%;
         gap: 6px;
       }
       .header-btns button {
-        width: 100%;
-        font-size: 0.65rem;
-        padding: 10px;
+        flex: 1 1 45%;
+        font-size: 0.6rem !important;
+        padding: 8px 6px !important;
+        min-height: 40px;
+        box-sizing: border-box;
       }
-      header div[style*="player-avatar"] {
+      #header-stats-pill {
         margin-left: 0 !important;
         margin-right: 0 !important;
         width: 100%;
         justify-content: center;
+        box-sizing: border-box;
       }
       .arena-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
       }
       .minecraft-splash {
-        position: relative;
-        display: block;
-        top: 0;
-        left: 0;
-        margin: 8px auto 0;
-        text-align: center;
-        width: fit-content;
+        display: none !important;
+      }
+      #screen-start, #screen-scoreboard, #screen-monitor {
+        padding: 1.2rem 0.75rem;
+        min-height: auto;
+      }
+      .mc-box {
+        padding: 1rem;
+        border-width: 4px;
+      }
+      #ab-slingshot-arena {
+        height: 140px !important;
+      }
+      #red-bird {
+        font-size: 2rem !important;
+      }
+      #green-pig {
+        font-size: 2.2rem !important;
+      }
+      .timer-hud-digits {
+        font-size: 1.5rem !important;
+      }
+      .mc-btn {
+        font-size: 0.65rem !important;
+        padding: 10px 12px !important;
+        min-height: 44px;
+        touch-action: manipulation;
       }
       /* Golem Speech Bubble Fixes */
       .arena-card div[style*="display:flex; gap:12px;"] {
@@ -815,13 +846,13 @@
         width: 100%;
       }
       .arena-card div[style*="position:absolute; left:-12px;"] {
-        display: none; /* Hide side triangle on mobile */
+        display: none;
       }
     }
 
     /* Start Screen Header hiding rules */
-    body.start-screen-active header div[style*="background:#8b5a2b"],
-    body.start-screen-active header .header-btns {
+    body.start-screen-active #header-stats-pill,
+    body.start-screen-active .header-btns {
       display: none !important;
     }
 
@@ -878,7 +909,7 @@
     </div>
 
     <!-- Player Stats HUD -->
-    <div style="display:flex; align-items:center; gap:12px; background:#8b5a2b; border:3px solid #5c3519; padding:6px 12px; box-shadow:inset -2px -2px 0 #5c3519, inset 2px 2px 0 #ab5e29; margin-right: auto; margin-left: 20px;">
+    <div id="header-stats-pill" style="display:flex; align-items:center; gap:12px; background:#8b5a2b; border:3px solid #5c3519; padding:6px 12px; box-shadow:inset -2px -2px 0 #5c3519, inset 2px 2px 0 #ab5e29; margin-right: auto; margin-left: 20px;">
       <div style="width:24px; height:24px; background:#e57373; border:2px solid #000; display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:inset -2px -2px 0 #b71c1c; border-radius:50%;" id="player-avatar">🔴</div>
       <div style="font-size:0.55rem; text-shadow:2px 2px 0 #000; line-height: 1.3; color:#fff;">
         <span style="color:#ffeb3b;" id="header-player-tag">RED</span><br/>
@@ -1396,7 +1427,7 @@
         ],
         hint: "Directly echoing inputs back to HTML executes script tags. Sanitization needed!",
         explain: "Echoing inputs unfiltered executes arbitrary Javascript. Wrap it in htmlspecialchars()!",
-        vulDesc: "Vulnerable Exploit:\nWelcome back, <script>alert('Looting cookies!')</script>!",
+        vulDesc: "Vulnerable Exploit:\nWelcome back, <script>alert('Looting cookies!')<\/script>!",
         fixedDesc: "Auto Patch:\nWelcome back, <?php echo htmlspecialchars($_GET['tag'], ENT_QUOTES, 'UTF-8'); ?>!"
       },
       {
