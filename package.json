@@ -1,0 +1,9 @@
+{
+  "name": "securecraft-diamond-patch-quest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Live QR multiplayer presentation game for CodeSecure.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
