@@ -3,371 +3,396 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CodeSecure Core Raid</title>
+  <title>CodeSecure Creeper Run</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=JetBrains+Mono:wght@500;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800;900&family=JetBrains+Mono:wght@700&family=Press+Start+2P&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
-      --bg: #050a12;
-      --panel: rgba(9, 18, 31, 0.84);
-      --panel2: rgba(15, 29, 45, 0.76);
-      --line: rgba(113, 231, 255, 0.22);
-      --text: #f6fbff;
-      --muted: #92aabe;
+      --bg: #071019;
+      --panel: rgba(8, 17, 28, 0.86);
+      --line: rgba(91, 231, 255, 0.25);
+      --text: #f7fbff;
+      --muted: #9eb3c7;
       --cyan: #32d6ff;
       --green: #42e66f;
       --gold: #ffcf4d;
       --red: #ff4d3d;
       --purple: #b06cff;
-      --core: #78f7ff;
     }
 
     * { box-sizing: border-box; }
-    html, body { min-height: 100%; }
     body {
       margin: 0;
+      min-height: 100vh;
       color: var(--text);
       font-family: Inter, system-ui, sans-serif;
       background:
-        radial-gradient(circle at 50% 38%, rgba(50, 214, 255, 0.2), transparent 30%),
-        radial-gradient(circle at 15% 15%, rgba(176, 108, 255, 0.18), transparent 28%),
-        linear-gradient(180deg, #050a12, #09131f 55%, #07130d);
+        radial-gradient(circle at 50% 8%, rgba(50,214,255,0.2), transparent 28%),
+        radial-gradient(circle at 12% 78%, rgba(66,230,111,0.13), transparent 25%),
+        linear-gradient(180deg, #071019, #091522 55%, #07140d);
       overflow-x: hidden;
     }
 
     button, input, select { font: inherit; }
     button { cursor: pointer; }
     h1, h2, h3, p { margin: 0; }
-
-    #fx {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      opacity: 0.42;
-    }
-
     .hidden { display: none !important; }
-    .app {
-      position: relative;
-      z-index: 1;
+
+    .host {
       min-height: 100vh;
       padding: 14px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+    }
+
+    .topbar, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 20px 70px rgba(0,0,0,0.34);
+      backdrop-filter: blur(14px);
     }
 
     .topbar {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 16px;
+      gap: 12px;
       align-items: center;
-      padding: 14px 16px;
-      background: rgba(5, 12, 22, 0.82);
-      border: 1px solid var(--line);
-      box-shadow: 0 20px 70px rgba(0,0,0,0.36);
-      backdrop-filter: blur(18px);
+      padding: 12px 14px;
     }
 
-    .brand { display: flex; gap: 14px; align-items: center; min-width: 0; }
-    .logo {
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .block-logo {
       width: 52px;
       height: 52px;
       display: grid;
       place-items: center;
-      border: 3px solid rgba(255,255,255,0.18);
-      background:
-        linear-gradient(135deg, rgba(255,255,255,0.24), transparent 35%),
-        linear-gradient(45deg, #40a44d 0 45%, #7a5335 45% 100%);
-      box-shadow: 0 0 34px rgba(50,214,255,0.32), inset 4px 4px 0 rgba(255,255,255,0.12);
       font-family: "Press Start 2P", monospace;
-      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.25), transparent 36%),
+        linear-gradient(45deg, #4da54b 0 45%, #7c5437 45% 100%);
+      border: 3px solid rgba(255,255,255,0.18);
+      box-shadow: 0 0 32px rgba(50,214,255,0.38);
     }
 
     .eyebrow {
       color: var(--cyan);
       font-size: 11px;
-      text-transform: uppercase;
       letter-spacing: 0.14em;
+      text-transform: uppercase;
       font-weight: 900;
     }
 
     h1 {
-      font-size: clamp(25px, 3vw, 46px);
+      font-size: clamp(28px, 3.4vw, 54px);
       line-height: 0.96;
-      letter-spacing: 0;
     }
 
-    .status-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
     .pill {
       padding: 9px 11px;
-      background: rgba(255,255,255,0.065);
+      background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12);
       color: var(--muted);
-      font-weight: 900;
-      font-size: 12px;
       font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .game-panel {
+      padding: 12px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .meter {
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 10px;
+    }
+
+    .meter-head {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 7px;
+    }
+
+    .bar {
+      height: 13px;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      transition: width 220ms ease;
+    }
+
+    .fill.red { background: linear-gradient(90deg, var(--red), var(--gold)); }
+
+    #arena {
+      width: 100%;
+      min-height: 590px;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0/42px 42px,
+        linear-gradient(0deg, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0/42px 42px,
+        radial-gradient(circle at 50% 85%, rgba(50,214,255,0.14), transparent 34%),
+        #050b13;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .core {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      width: 180px;
+      height: 70px;
+      transform: translateX(-50%);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-family: "Press Start 2P", monospace;
+      font-size: 11px;
+      line-height: 1.55;
+      background: radial-gradient(circle, rgba(120,247,255,0.62), rgba(50,214,255,0.16) 55%, rgba(5,10,18,0.95));
+      border: 2px solid rgba(120,247,255,0.72);
+      box-shadow: 0 0 52px rgba(50,214,255,0.45);
+    }
+
+    .team {
+      position: absolute;
+      bottom: 105px;
+      width: 64px;
+      height: 64px;
+      margin-left: -32px;
+      border: 2px solid currentColor;
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 0 28px currentColor;
+      display: grid;
+      place-items: center;
+      font-family: "Press Start 2P", monospace;
+      font-size: 20px;
+      transition: left 180ms linear;
+    }
+
+    .team::after {
+      content: attr(data-name);
+      position: absolute;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-family: Inter, sans-serif;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .threat {
+      position: absolute;
+      width: 88px;
+      height: 88px;
+      margin-left: -44px;
+      border: 2px solid currentColor;
+      background: rgba(15, 21, 30, 0.94);
+      box-shadow: 0 0 30px currentColor;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 7px;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.1;
+      transition: top 360ms linear, left 160ms linear;
+    }
+
+    .hp {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 7px;
+      height: 6px;
+      background: rgba(255,255,255,0.14);
+    }
+    .hp span { display: block; height: 100%; background: currentColor; }
+
+    .blast {
+      position: absolute;
+      width: 78px;
+      height: 78px;
+      margin-left: -39px;
+      margin-top: -39px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      background: rgba(255,255,255,0.08);
+      color: var(--gold);
+      font-weight: 900;
+      box-shadow: 0 0 42px currentColor;
+      animation: pop 1s ease forwards;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.4); opacity: 1; }
+      to { transform: scale(1.45); opacity: 0; }
+    }
+
+    .join-card {
+      display: grid;
+      grid-template-columns: 142px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .qr {
+      background: #fff;
+      width: 142px;
+      min-height: 142px;
+      padding: 8px;
+      border: 4px solid #050a12;
+    }
+
+    .join-url {
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      word-break: break-all;
+      font-size: 12px;
+      margin-top: 7px;
+    }
+
+    .side {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .panel { padding: 13px; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
     }
 
     .btn {
       border: 1px solid rgba(255,255,255,0.16);
       color: var(--text);
       background: linear-gradient(180deg, rgba(50,214,255,0.26), rgba(50,214,255,0.08));
-      padding: 12px 14px;
-      font-weight: 900;
-      box-shadow: 0 12px 26px rgba(0,0,0,0.24);
-      transition: transform 120ms ease, border-color 120ms ease, filter 120ms ease;
-    }
-    .btn:hover { transform: translateY(-1px); border-color: var(--cyan); }
-    .btn:active { transform: translateY(1px); filter: brightness(0.9); }
-    .btn.red { background: linear-gradient(180deg, rgba(255,77,61,0.34), rgba(255,77,61,0.08)); }
-    .btn.green { background: linear-gradient(180deg, rgba(66,230,111,0.32), rgba(66,230,111,0.08)); }
-    .btn.gold { background: linear-gradient(180deg, rgba(255,207,77,0.34), rgba(255,207,77,0.08)); }
-    .btn.purple { background: linear-gradient(180deg, rgba(176,108,255,0.34), rgba(176,108,255,0.08)); }
-
-    .host-grid {
-      display: grid;
-      grid-template-columns: 1fr 360px;
-      gap: 14px;
-      margin-top: 14px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: 0 24px 80px rgba(0,0,0,0.34);
-      backdrop-filter: blur(16px);
-      padding: 14px;
-    }
-
-    .arena {
-      min-height: calc(100vh - 126px);
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 12px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .arena-hud {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      align-items: stretch;
-    }
-
-    .meter-card {
       padding: 12px;
-      background: rgba(255,255,255,0.055);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .meter-head { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 12px; font-weight: 900; margin-bottom: 8px; }
-    .bar {
-      height: 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      overflow: hidden;
-    }
-    .fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--green), var(--cyan));
-      box-shadow: 0 0 22px currentColor;
-      transition: width 350ms ease;
-    }
-    .fill.red { background: linear-gradient(90deg, var(--red), var(--gold)); }
-    .fill.gold { background: linear-gradient(90deg, var(--gold), var(--cyan)); }
-
-    .battlefield {
-      position: relative;
-      min-height: 560px;
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 44px 44px,
-        linear-gradient(0deg, rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 44px 44px,
-        radial-gradient(circle at 50% 50%, rgba(50,214,255,0.12), transparent 28%),
-        rgba(3, 9, 17, 0.72);
-      border: 1px solid rgba(255,255,255,0.1);
-      overflow: hidden;
-    }
-
-    .lane {
-      position: absolute;
-      left: 3%;
-      right: 3%;
-      height: 22%;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .lane:nth-child(1) { top: 4%; }
-    .lane:nth-child(2) { top: 27%; }
-    .lane:nth-child(3) { top: 50%; }
-    .lane:nth-child(4) { top: 73%; }
-    .lane-label {
-      position: absolute;
-      left: 10px;
-      top: 8px;
-      color: rgba(255,255,255,0.36);
-      font-size: 12px;
       font-weight: 900;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
     }
+    .btn.green { background: linear-gradient(180deg, rgba(66,230,111,0.32), rgba(66,230,111,0.08)); }
+    .btn.red { background: linear-gradient(180deg, rgba(255,77,61,0.34), rgba(255,77,61,0.08)); }
 
-    .core {
-      position: absolute;
-      right: 7%;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 148px;
-      height: 148px;
-      border: 2px solid rgba(120,247,255,0.72);
-      background:
-        radial-gradient(circle, rgba(120,247,255,0.72), rgba(50,214,255,0.16) 48%, rgba(5,10,18,0.88) 72%),
-        linear-gradient(45deg, rgba(255,255,255,0.12), transparent);
-      box-shadow: 0 0 60px rgba(50,214,255,0.48), inset 0 0 26px rgba(255,255,255,0.16);
-      display: grid;
-      place-items: center;
-      font-family: "Press Start 2P", monospace;
-      font-size: 12px;
-      text-align: center;
-      line-height: 1.6;
-      z-index: 4;
-      animation: corePulse 1.3s ease-in-out infinite alternate;
-    }
-    @keyframes corePulse {
-      from { filter: brightness(0.92); }
-      to { filter: brightness(1.2); }
-    }
-
-    .threat {
-      position: absolute;
-      width: 168px;
-      min-height: 82px;
-      padding: 10px;
-      background: rgba(10, 18, 28, 0.92);
-      border: 1px solid currentColor;
-      box-shadow: 0 0 28px currentColor, inset 0 0 0 3px rgba(255,255,255,0.035);
-      z-index: 3;
-      transition: left 900ms linear, transform 200ms ease;
-    }
-    .threat.scanned { outline: 2px solid var(--gold); }
-    .threat strong { display: block; font-size: 14px; margin-bottom: 5px; }
-    .threat small { color: var(--muted); display: block; font-family: "JetBrains Mono", monospace; }
-    .hp-mini {
-      height: 7px;
-      background: rgba(255,255,255,0.12);
-      margin-top: 8px;
-    }
-    .hp-mini span {
-      display: block;
-      height: 100%;
-      background: currentColor;
-      transition: width 300ms ease;
-    }
-
-    .join-card {
-      display: grid;
-      grid-template-columns: 156px 1fr;
-      gap: 12px;
-      align-items: center;
-    }
-    .qr-box {
-      background: #fff;
-      padding: 10px;
-      border: 5px solid #071019;
-      width: 156px;
-      min-height: 156px;
-    }
-    .join-url {
-      color: var(--muted);
-      word-break: break-all;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      margin-top: 8px;
-    }
-
-    .side-stack { display: grid; gap: 14px; align-content: start; }
-    .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .team-list, .feed, .player-list { display: grid; gap: 9px; margin-top: 10px; }
+    .list, .feed { display: grid; gap: 8px; margin-top: 10px; }
     .row {
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
-      gap: 10px;
-      padding: 10px;
+      gap: 9px;
+      padding: 9px;
       background: rgba(255,255,255,0.055);
       border: 1px solid rgba(255,255,255,0.1);
     }
     .dot { width: 13px; height: 13px; background: currentColor; box-shadow: 0 0 16px currentColor; }
     .row strong { font-size: 14px; }
-    .row small { display: block; color: var(--muted); margin-top: 3px; }
+    .row small { display: block; color: var(--muted); margin-top: 2px; }
     .score { color: var(--gold); font-family: "JetBrains Mono", monospace; font-weight: 900; }
 
     .feed {
-      max-height: 230px;
+      max-height: 250px;
       overflow: auto;
     }
     .feed div {
-      padding: 9px;
-      color: #ddecff;
-      background: rgba(255,255,255,0.045);
       border-left: 3px solid var(--cyan);
+      background: rgba(255,255,255,0.045);
+      padding: 8px;
+      color: #dcecff;
       font-size: 12px;
       line-height: 1.35;
     }
     .feed .success { border-color: var(--green); }
-    .feed .warning, .feed .danger { border-color: var(--red); }
-    .feed .power { border-color: var(--gold); }
+    .feed .danger { border-color: var(--red); }
+    .feed .join { border-color: var(--gold); }
 
-    .player-shell {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
+    .phone {
       max-width: 620px;
+      min-height: 100vh;
       margin: 0 auto;
       padding: 14px;
       display: grid;
       align-content: start;
       gap: 12px;
     }
-    .join-screen {
-      margin-top: 10vh;
-      display: grid;
-      gap: 14px;
-    }
-    .join-screen h1 { font-size: 38px; }
-    label { display: grid; gap: 8px; color: var(--muted); font-weight: 900; font-size: 13px; }
+
+    .join-screen { margin-top: 10vh; display: grid; gap: 13px; }
+    .join-screen h1 { font-size: 36px; }
+    label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 900; }
     input, select {
       width: 100%;
-      padding: 14px;
       color: var(--text);
       background: rgba(255,255,255,0.075);
       border: 1px solid var(--line);
+      padding: 14px;
       outline: none;
     }
 
-    .controller-grid {
+    .pad {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
-    .action-btn {
-      min-height: 112px;
-      border: 1px solid rgba(255,255,255,0.14);
+    .pad .action {
+      min-height: 116px;
+      border: 1px solid rgba(255,255,255,0.15);
       color: var(--text);
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-      padding: 14px;
+      background: rgba(255,255,255,0.06);
       text-align: left;
-      box-shadow: 0 16px 36px rgba(0,0,0,0.3);
+      padding: 14px;
+      box-shadow: 0 16px 42px rgba(0,0,0,0.28);
     }
-    .action-btn strong { display: block; font-size: 20px; margin-bottom: 8px; }
-    .action-btn span { color: var(--muted); font-size: 12px; line-height: 1.35; display: block; }
-    .action-btn.scan { border-color: rgba(50,214,255,0.38); }
-    .action-btn.patch { border-color: rgba(66,230,111,0.38); }
-    .action-btn.shield { border-color: rgba(255,207,77,0.38); }
-    .action-btn.overclock { border-color: rgba(176,108,255,0.38); }
+    .action strong { display: block; font-size: 22px; margin-bottom: 7px; }
+    .action span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .wide { grid-column: 1 / -1; }
 
     .toast {
       position: fixed;
@@ -376,158 +401,129 @@
       transform: translateX(-50%);
       display: none;
       width: min(92vw, 440px);
-      padding: 12px;
-      z-index: 5;
       background: rgba(5,10,18,0.94);
       border: 1px solid var(--line);
+      padding: 12px;
       text-align: center;
       font-weight: 900;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      z-index: 10;
     }
 
-    @media (max-width: 1020px) {
-      .topbar, .host-grid, .arena-hud, .join-card { grid-template-columns: 1fr; }
-      .status-row { justify-content: flex-start; }
-      .battlefield { min-height: 480px; }
-      .core { width: 112px; height: 112px; right: 4%; font-size: 10px; }
-      .threat { width: 132px; min-height: 72px; }
-      .side-stack { grid-template-columns: 1fr; }
+    @media (max-width: 980px) {
+      .topbar, .main-grid, .hud, .join-card { grid-template-columns: 1fr; }
+      .pills { justify-content: flex-start; }
+      #arena { min-height: 520px; }
     }
   </style>
 </head>
 <body>
-  <canvas id="fx"></canvas>
-
-  <div id="host-app" class="app hidden">
+  <div id="host-app" class="host hidden">
     <header class="topbar">
       <div class="brand">
-        <div class="logo">CS</div>
+        <div class="block-logo">CS</div>
         <div>
-          <div class="eyebrow">Live multiplayer defense arena</div>
-          <h1>CodeSecure Core Raid</h1>
+          <div class="eyebrow">Minecraft arcade multiplayer</div>
+          <h1>CodeSecure Creeper Run</h1>
         </div>
       </div>
-      <div class="status-row">
-        <div class="pill" id="phase-pill">LOBBY</div>
-        <div class="pill" id="timer-pill">02:30</div>
-        <div class="pill" id="players-pill">0 OPS</div>
-        <div class="pill">ROOM RAID</div>
+      <div class="pills">
+        <div class="pill" id="phase">LOBBY</div>
+        <div class="pill" id="timer">02:00</div>
+        <div class="pill" id="players">0 PLAYERS</div>
+        <div class="pill">ROOM RUN</div>
       </div>
     </header>
 
-    <main class="host-grid">
-      <section class="panel arena">
-        <div class="arena-hud">
-          <div class="meter-card">
-            <div class="meter-head"><span>Server Core</span><span id="core-label">1000 / 1000</span></div>
+    <main class="main-grid">
+      <section class="panel game-panel">
+        <div class="hud">
+          <div class="meter">
+            <div class="meter-head"><span>Server Core</span><span id="core-label">1000</span></div>
             <div class="bar"><div class="fill red" id="core-fill"></div></div>
           </div>
-          <div class="meter-card">
-            <div class="meter-head"><span>CodeSecure Firewall</span><span id="shield-label">0</span></div>
-            <div class="bar"><div class="fill gold" id="shield-fill"></div></div>
-          </div>
-          <div class="meter-card">
-            <div class="meter-head"><span>Combo Multiplier</span><span id="combo-label">x1.0</span></div>
-            <div class="bar"><div class="fill" id="combo-fill"></div></div>
+          <div class="meter">
+            <div class="meter-head"><span>Active Threats</span><span id="threat-label">0</span></div>
+            <div class="bar"><div class="fill" id="threat-fill"></div></div>
           </div>
         </div>
-
-        <div class="battlefield" id="battlefield">
-          <div class="lane"><span class="lane-label">Gateway Lane</span></div>
-          <div class="lane"><span class="lane-label">Config Lane</span></div>
-          <div class="lane"><span class="lane-label">Webhook Lane</span></div>
-          <div class="lane"><span class="lane-label">Vault Lane</span></div>
+        <div id="arena">
           <div class="core" id="core-box">SERVER<br>CORE</div>
         </div>
-
         <div class="join-card">
-          <div class="qr-box" id="qr"></div>
+          <div id="qr" class="qr"></div>
           <div>
-            <div class="eyebrow">Audience join</div>
-            <h2>Scan QR, choose team, use phone as controller.</h2>
+            <div class="eyebrow">Join with phone</div>
+            <h2>Move, shoot patches, shield the server core.</h2>
             <p class="join-url" id="join-url">Loading...</p>
           </div>
         </div>
       </section>
 
-      <aside class="side-stack">
+      <aside class="side">
         <section class="panel">
-          <div class="eyebrow">Host Access</div>
-          <div class="control-grid" style="margin-top:10px">
-            <button class="btn green" onclick="hostAction('start')">Start Raid</button>
-            <button class="btn red" onclick="hostAction('reset')">Reset Lobby</button>
+          <div class="eyebrow">Host Control</div>
+          <div class="controls">
+            <button class="btn green" onclick="hostAction('start')">Start Game</button>
+            <button class="btn red" onclick="hostAction('reset')">Reset</button>
           </div>
-          <p style="color:var(--muted);font-size:12px;line-height:1.45;margin-top:10px">After Start, waves, scoring, CodeSecure bursts, and ending run automatically.</p>
         </section>
-
         <section class="panel">
-          <div class="eyebrow">Team Defense Score</div>
-          <div class="team-list" id="team-list"></div>
+          <div class="eyebrow">Teams</div>
+          <div class="list" id="teams"></div>
         </section>
-
         <section class="panel">
-          <div class="eyebrow">Top Operators</div>
-          <div class="player-list" id="player-list"></div>
+          <div class="eyebrow">Top Players</div>
+          <div class="list" id="top-players"></div>
         </section>
-
         <section class="panel">
-          <div class="eyebrow">Threat Intel</div>
+          <div class="eyebrow">Game Feed</div>
           <div class="feed" id="feed"></div>
         </section>
       </aside>
     </main>
   </div>
 
-  <div id="player-app" class="player-shell hidden">
+  <div id="player-app" class="phone hidden">
     <section id="join-screen" class="panel join-screen">
-      <div class="logo">CS</div>
+      <div class="block-logo">CS</div>
       <div>
         <div class="eyebrow">Phone controller</div>
-        <h1>Join Core Raid</h1>
+        <h1>Join Creeper Run</h1>
       </div>
-      <label>
-        Operator name
-        <input id="name-input" maxlength="18" placeholder="Your name">
-      </label>
-      <label>
-        Team
-        <select id="team-input">
-          <option value="redstone">Redstone</option>
-          <option value="diamond">Diamond</option>
-          <option value="emerald">Emerald</option>
-          <option value="nether">Nether</option>
-        </select>
-      </label>
-      <button class="btn green" onclick="joinGame()">Enter Raid Lobby</button>
+      <label>Player name<input id="name-input" maxlength="18" placeholder="Your name"></label>
+      <label>Team<select id="team-input">
+        <option value="redstone">Redstone</option>
+        <option value="diamond">Diamond</option>
+        <option value="emerald">Emerald</option>
+        <option value="nether">Nether</option>
+      </select></label>
+      <button class="btn green" onclick="joinGame()">Join Game</button>
     </section>
 
     <section id="play-screen" class="hidden">
       <div class="panel">
-        <div class="eyebrow" id="player-team">Operator</div>
+        <div class="eyebrow" id="player-team">Controller</div>
         <h2 id="player-name">Player</h2>
-        <div class="status-row" style="justify-content:flex-start;margin-top:10px">
+        <div class="pills" style="justify-content:flex-start;margin-top:10px">
           <div class="pill score" id="player-score">0</div>
           <div class="pill" id="player-phase">LOBBY</div>
         </div>
       </div>
-
       <div class="panel">
-        <div class="meter-head"><span>Team Energy</span><span id="team-energy-label">0%</span></div>
-        <div class="bar"><div class="fill" id="team-energy-fill"></div></div>
-        <p style="color:var(--muted);font-size:12px;line-height:1.45;margin-top:10px">At 100%, CodeSecure automatically fires an Agent Burst: Scanner, CWE Classifier, RAG Retriever, Patch Agent, and Judge Agent.</p>
+        <div class="meter-head"><span>Team Energy</span><span id="energy-label">0%</span></div>
+        <div class="bar"><div class="fill" id="energy-fill"></div></div>
       </div>
-
-      <div class="controller-grid">
-        <button class="action-btn scan" onclick="sendAction('scan')"><strong>Scan</strong><span>Mark nearest threat and build team energy fast.</span></button>
-        <button class="action-btn patch" onclick="sendAction('patch')"><strong>Patch</strong><span>Damage the closest scanned vulnerability wave.</span></button>
-        <button class="action-btn shield" onclick="sendAction('shield')"><strong>Shield</strong><span>Add firewall HP before threats reach the core.</span></button>
-        <button class="action-btn overclock" onclick="sendAction('overclock')"><strong>Overclock</strong><span>Small damage to all active threats plus energy boost.</span></button>
+      <div class="pad">
+        <button class="action" onclick="sendAction('left')"><strong>Left</strong><span>Dodge and line up your defender.</span></button>
+        <button class="action" onclick="sendAction('right')"><strong>Right</strong><span>Move toward incoming mobs.</span></button>
+        <button class="action" onclick="sendAction('shoot')"><strong>Patch</strong><span>Fire a secure patch upward.</span></button>
+        <button class="action" onclick="sendAction('shield')"><strong>Shield</strong><span>Protect the server core.</span></button>
+        <button class="action wide" onclick="sendAction('ultimate')"><strong>Agent Burst</strong><span>At 100% energy, CodeSecure clears nearby threats.</span></button>
       </div>
-
-      <section class="panel">
-        <div class="eyebrow">Live Target</div>
-        <p id="live-target" style="margin-top:8px;color:var(--muted);line-height:1.45">Waiting for host to start.</p>
-      </section>
+      <div class="panel">
+        <div class="eyebrow">Nearest Threat</div>
+        <p id="target" style="color:var(--muted);line-height:1.45;margin-top:8px">Waiting for game start.</p>
+      </div>
     </section>
   </div>
 
@@ -535,15 +531,11 @@
 
   <script>
     const isPlayer = new URLSearchParams(location.search).has("player");
-    const hostApp = document.getElementById("host-app");
-    const playerApp = document.getElementById("player-app");
     const stateRef = { current: null };
-    let playerId = localStorage.getItem("coreraid_player_id") || "";
-    let qrMade = false;
-    let lastQrUrl = "";
+    let playerId = localStorage.getItem("creeperrun_player_id") || "";
+    let qrUrl = "";
 
-    if (isPlayer) playerApp.classList.remove("hidden");
-    else hostApp.classList.remove("hidden");
+    document.getElementById(isPlayer ? "player-app" : "host-app").classList.remove("hidden");
 
     function browserJoinUrl() {
       const url = new URL(location.href);
@@ -551,46 +543,39 @@
       return url.toString();
     }
 
-    function renderQr(joinUrl) {
-      if (isPlayer || !joinUrl) return;
-      if (!qrMade || lastQrUrl !== joinUrl) {
-        qrMade = true;
-        lastQrUrl = joinUrl;
-        const qrBox = document.getElementById("qr");
-        if (!qrBox) return;
-        qrBox.innerHTML = "";
-        if (window.QRCode) {
-          new QRCode(qrBox, { text: joinUrl, width: 126, height: 126, correctLevel: QRCode.CorrectLevel.H });
-        } else {
-          const img = document.createElement("img");
-          img.alt = "Join QR code";
-          img.width = 126;
-          img.height = 126;
-          img.src = `https://api.qrserver.com/v1/create-qr-code/?size=126x126&data=${encodeURIComponent(joinUrl)}`;
-          qrBox.appendChild(img);
-        }
+    function renderQr(url) {
+      if (isPlayer || !url || url === qrUrl) return;
+      qrUrl = url;
+      const box = document.getElementById("qr");
+      box.innerHTML = "";
+      if (window.QRCode) new QRCode(box, { text: url, width: 118, height: 118, correctLevel: QRCode.CorrectLevel.H });
+      else {
+        const img = document.createElement("img");
+        img.width = 118;
+        img.height = 118;
+        img.alt = "Join QR";
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=118x118&data=${encodeURIComponent(url)}`;
+        box.appendChild(img);
       }
     }
 
     if (!isPlayer) {
-      const fallbackUrl = browserJoinUrl();
-      document.getElementById("join-url").textContent = fallbackUrl;
-      renderQr(fallbackUrl);
+      document.getElementById("join-url").textContent = browserJoinUrl();
+      renderQr(browserJoinUrl());
     }
 
-    async function refreshState() {
+    async function refresh() {
       try {
-        const res = await fetch("/api/game", { cache: "no-store" });
-        stateRef.current = await res.json();
+        const response = await fetch("/api/game", { cache: "no-store" });
+        stateRef.current = await response.json();
         isPlayer ? renderPlayer() : renderHost();
       } catch (err) {
-        console.warn("refresh failed", err);
         if (!isPlayer) renderQr(browserJoinUrl());
       }
     }
 
-    setInterval(refreshState, 800);
-    refreshState();
+    setInterval(refresh, 420);
+    refresh();
 
     function post(action, body = {}) {
       return fetch(`/api/game?action=${encodeURIComponent(action)}`, {
@@ -598,102 +583,95 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
       }).then((r) => r.json()).then((data) => {
-        refreshState();
+        refresh();
         return data;
       });
     }
 
-    function pct(value, max) {
-      return Math.max(0, Math.min(100, (value / max) * 100));
-    }
-
-    function formatTime(ms) {
-      const left = Math.max(0, ms);
-      const sec = Math.ceil(left / 1000);
+    function pct(v, max) { return Math.max(0, Math.min(100, (v / max) * 100)); }
+    function time(ms) {
+      const sec = Math.ceil(Math.max(0, ms) / 1000);
       return `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
     }
 
     function renderHost() {
       const s = stateRef.current;
       if (!s) return;
-
       renderQr(s.joinUrl || browserJoinUrl());
-
-      document.getElementById("join-url").textContent = s.joinUrl;
-      document.getElementById("phase-pill").textContent = s.phase.toUpperCase();
-      document.getElementById("players-pill").textContent = `${s.players.length} OPS`;
-      document.getElementById("timer-pill").textContent = s.phase === "running" ? formatTime(s.durationMs - s.elapsedMs) : "02:30";
+      document.getElementById("join-url").textContent = s.joinUrl || browserJoinUrl();
+      document.getElementById("phase").textContent = s.phase.toUpperCase();
+      document.getElementById("timer").textContent = s.phase === "running" ? time(s.durationMs - s.elapsedMs) : "02:00";
+      document.getElementById("players").textContent = `${s.players.length} PLAYERS`;
       document.getElementById("core-label").textContent = `${s.coreHp} / ${s.maxCoreHp}`;
       document.getElementById("core-fill").style.width = `${pct(s.coreHp, s.maxCoreHp)}%`;
-      document.getElementById("shield-label").textContent = `${s.shield}`;
-      document.getElementById("shield-fill").style.width = `${pct(s.shield, 420)}%`;
-      document.getElementById("combo-label").textContent = `x${s.combo.toFixed(1)}`;
-      document.getElementById("combo-fill").style.width = `${pct(s.combo, 5)}%`;
-
-      renderThreats(s);
-      renderTeams(s);
-      renderPlayers(s);
-      renderFeed(s);
-
-      if (s.phase === "ended" && s.winner) {
-        document.getElementById("core-box").innerHTML = `WINNER<br>${s.winner.name.toUpperCase()}`;
-      } else {
-        document.getElementById("core-box").innerHTML = "SERVER<br>CORE";
-      }
+      document.getElementById("threat-label").textContent = String(s.threats.length);
+      document.getElementById("threat-fill").style.width = `${pct(s.threats.length, 16)}%`;
+      document.getElementById("core-box").innerHTML = s.phase === "ended" && s.winner ? `WINNER<br>${s.winner.name.toUpperCase()}` : "SERVER<br>CORE";
+      drawArena(s);
+      drawTeams(s);
+      drawPlayers(s);
+      drawFeed(s);
     }
 
-    function renderThreats(s) {
-      const field = document.getElementById("battlefield");
-      field.querySelectorAll(".threat").forEach((node) => node.remove());
-      s.threats.forEach((threat) => {
+    function drawArena(s) {
+      const arena = document.getElementById("arena");
+      arena.querySelectorAll(".team,.threat,.blast").forEach((el) => el.remove());
+      const rect = arena.getBoundingClientRect();
+      const scaleX = rect.width / s.arena.width;
+      const scaleY = rect.height / s.arena.height;
+      s.threats.forEach((t) => {
         const el = document.createElement("div");
-        const laneTop = [7, 30, 53, 76][threat.lane] || 7;
-        const left = 7 + threat.progress * 68;
-        el.className = `threat ${threat.scanned ? "scanned" : ""}`;
-        el.style.color = threat.color;
-        el.style.left = `${left}%`;
-        el.style.top = `${laneTop}%`;
-        el.innerHTML = `
-          <strong>${threat.name}</strong>
-          <small>${threat.cwe} / ${threat.secure}</small>
-          <div class="hp-mini"><span style="width:${pct(threat.hp, threat.maxHp)}%"></span></div>
-        `;
-        field.appendChild(el);
+        el.className = "threat";
+        el.style.color = t.color;
+        el.style.left = `${t.x * scaleX}px`;
+        el.style.top = `${t.y * scaleY}px`;
+        el.innerHTML = `${t.name}<br><small>${t.cwe}</small><div class="hp"><span style="width:${pct(t.hp, t.maxHp)}%"></span></div>`;
+        arena.appendChild(el);
+      });
+      s.teams.forEach((team) => {
+        const el = document.createElement("div");
+        el.className = "team";
+        el.dataset.name = team.name;
+        el.style.color = team.color;
+        el.style.left = `${team.x * scaleX}px`;
+        el.textContent = team.name[0];
+        arena.appendChild(el);
+      });
+      s.blasts.forEach((b) => {
+        const el = document.createElement("div");
+        el.className = "blast";
+        el.style.color = b.color;
+        el.style.left = `${b.x * scaleX}px`;
+        el.style.top = `${b.y * scaleY}px`;
+        el.textContent = b.label;
+        arena.appendChild(el);
       });
     }
 
-    function renderTeams(s) {
-      const box = document.getElementById("team-list");
+    function drawTeams(s) {
+      const box = document.getElementById("teams");
       box.innerHTML = "";
       [...s.teams].sort((a, b) => b.score - a.score).forEach((team) => {
         const row = document.createElement("div");
         row.className = "row";
-        row.innerHTML = `
-          <span class="dot" style="color:${team.color}"></span>
-          <span><strong>${team.name}</strong><small>Energy ${team.energy}% / Agent bursts ${team.agents}</small></span>
-          <span class="score">${team.score}</span>
-        `;
+        row.innerHTML = `<span class="dot" style="color:${team.color}"></span><span><strong>${team.name}</strong><small>Energy ${team.energy}% / Shield ${team.shield}</small></span><span class="score">${team.score}</span>`;
         box.appendChild(row);
       });
     }
 
-    function renderPlayers(s) {
-      const box = document.getElementById("player-list");
+    function drawPlayers(s) {
+      const box = document.getElementById("top-players");
       box.innerHTML = "";
-      [...s.players].sort((a, b) => b.score - a.score).slice(0, 8).forEach((player, index) => {
-        const team = s.teams.find((item) => item.id === player.team);
+      [...s.players].sort((a, b) => b.score - a.score).slice(0, 7).forEach((p, i) => {
+        const team = s.teams.find((t) => t.id === p.team);
         const row = document.createElement("div");
         row.className = "row";
-        row.innerHTML = `
-          <span class="score">#${index + 1}</span>
-          <span><strong>${player.name}</strong><small>${team ? team.name : "Team"} / ${player.actions} actions</small></span>
-          <span class="score">${player.score}</span>
-        `;
+        row.innerHTML = `<span class="score">#${i + 1}</span><span><strong>${p.name}</strong><small>${team ? team.name : "Team"} / ${p.actions} moves</small></span><span class="score">${p.score}</span>`;
         box.appendChild(row);
       });
     }
 
-    function renderFeed(s) {
+    function drawFeed(s) {
       const box = document.getElementById("feed");
       box.innerHTML = "";
       s.feed.forEach((item) => {
@@ -704,111 +682,58 @@
       });
     }
 
-    function hostAction(action) {
-      post(`host:${action}`).then((data) => {
-        if (data.ok && action === "start") pulse("#core-box");
-      });
-    }
+    function hostAction(action) { post(`host:${action}`); }
 
     async function joinGame() {
-      const name = document.getElementById("name-input").value.trim() || "Operator";
+      const name = document.getElementById("name-input").value.trim() || "Player";
       const team = document.getElementById("team-input").value;
       const data = await post("join", { name, team });
-      if (!data.ok) return toast("Join failed. Try again.");
+      if (!data.ok) return toast("Join failed.");
       playerId = data.playerId;
-      localStorage.setItem("coreraid_player_id", playerId);
+      localStorage.setItem("creeperrun_player_id", playerId);
       document.getElementById("join-screen").classList.add("hidden");
       document.getElementById("play-screen").classList.remove("hidden");
-      toast("Joined. Wait for Ibrahim to start the raid.");
+      toast("Joined. Wait for Start Game.");
       renderPlayer();
     }
 
     function renderPlayer() {
       const s = stateRef.current;
       if (!s) return;
-      const player = s.players.find((item) => item.id === playerId);
-      if (!player) {
+      const p = s.players.find((x) => x.id === playerId);
+      if (!p) {
         document.getElementById("join-screen").classList.remove("hidden");
         document.getElementById("play-screen").classList.add("hidden");
         return;
       }
-
       document.getElementById("join-screen").classList.add("hidden");
       document.getElementById("play-screen").classList.remove("hidden");
-      const team = s.teams.find((item) => item.id === player.team);
-      const target = [...s.threats].sort((a, b) => b.progress - a.progress)[0];
-      document.getElementById("player-name").textContent = player.name;
-      document.getElementById("player-team").textContent = `${team.name} Team Controller`;
-      document.getElementById("player-score").textContent = player.score;
+      const team = s.teams.find((t) => t.id === p.team);
+      const target = [...s.threats].sort((a, b) => b.y - a.y)[0];
+      document.getElementById("player-team").textContent = `${team.name} Controller`;
+      document.getElementById("player-name").textContent = p.name;
+      document.getElementById("player-score").textContent = p.score;
       document.getElementById("player-phase").textContent = s.phase.toUpperCase();
-      document.getElementById("team-energy-label").textContent = `${team.energy}%`;
-      document.getElementById("team-energy-fill").style.width = `${team.energy}%`;
-      document.getElementById("live-target").textContent = target
-        ? `${target.name} approaching ${s.lanes[target.lane]} lane. Secure fix: ${target.secure}.`
-        : s.phase === "running" ? "No active threat. Build shield or prepare overclock." : "Waiting for Start Raid.";
+      document.getElementById("energy-label").textContent = `${team.energy}%`;
+      document.getElementById("energy-fill").style.width = `${team.energy}%`;
+      document.getElementById("target").textContent = target ? `${target.name} ${target.cwe} is closest. Line up and fire Patch.` : "No mob active. Move into position or shield.";
     }
 
     async function sendAction(kind) {
       const data = await post("action", { playerId, kind });
       toast(data.message || "Action sent.");
-      if (data.ok) pulse(`.${kind}`);
     }
 
     function toast(text) {
       const el = document.getElementById("toast");
       el.textContent = text;
       el.style.display = "block";
-      if (window.gsap) gsap.fromTo(el, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.18 });
+      if (window.gsap) gsap.fromTo(el, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.15 });
       setTimeout(() => {
-        if (window.gsap) gsap.to(el, { y: 18, opacity: 0, duration: 0.2, onComplete: () => el.style.display = "none" });
+        if (window.gsap) gsap.to(el, { y: 18, opacity: 0, duration: 0.18, onComplete: () => el.style.display = "none" });
         else el.style.display = "none";
-      }, 1600);
+      }, 1100);
     }
-
-    function pulse(selector) {
-      if (!window.gsap) return;
-      gsap.fromTo(selector, { scale: 0.96 }, { scale: 1.04, yoyo: true, repeat: 1, duration: 0.13 });
-    }
-
-    function initThree() {
-      if (!window.THREE) return;
-      const canvas = document.getElementById("fx");
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 100);
-      camera.position.z = 8;
-      const group = new THREE.Group();
-      scene.add(group);
-      const geo = new THREE.BoxGeometry(0.28, 0.28, 0.28);
-      const colors = ["#32d6ff", "#42e66f", "#ffcf4d", "#b06cff", "#ff4d3d"];
-      for (let i = 0; i < 90; i++) {
-        const mat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length], roughness: 0.28, metalness: 0.35, transparent: true, opacity: 0.55 });
-        const cube = new THREE.Mesh(geo, mat);
-        cube.position.set((Math.random() - 0.5) * 18, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 8);
-        cube.rotation.set(Math.random(), Math.random(), Math.random());
-        group.add(cube);
-      }
-      const light = new THREE.PointLight(0xffffff, 20, 80);
-      light.position.set(3, 3, 4);
-      scene.add(light);
-      function resize() {
-        renderer.setSize(innerWidth, innerHeight);
-        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-        camera.aspect = innerWidth / innerHeight;
-        camera.updateProjectionMatrix();
-      }
-      addEventListener("resize", resize);
-      resize();
-      function frame() {
-        group.rotation.x += 0.001;
-        group.rotation.y += 0.0017;
-        renderer.render(scene, camera);
-        requestAnimationFrame(frame);
-      }
-      frame();
-    }
-
-    initThree();
   </script>
 </body>
 </html>

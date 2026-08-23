@@ -1,76 +1,21 @@
 const crypto = require("crypto");
 
-const ROUND_MS = 150000;
-const LANES = ["Gateway", "Config", "Webhook", "Vault"];
+const ROUND_MS = 120000;
+const WIDTH = 1000;
+const HEIGHT = 620;
 
-const THREAT_TYPES = [
-  {
-    id: "sqli",
-    name: "SQL Injection",
-    cwe: "CWE-89",
-    lane: 0,
-    hp: 130,
-    impact: 95,
-    reward: 170,
-    color: "#ff4d3d",
-    code: "\"SELECT * FROM users WHERE id = \" + input",
-    secure: "Parameterized query"
-  },
-  {
-    id: "deser",
-    name: "Unsafe Loader",
-    cwe: "CWE-502",
-    lane: 1,
-    hp: 155,
-    impact: 110,
-    reward: 190,
-    color: "#ffcf4d",
-    code: "yaml.load(user_file)",
-    secure: "safe_load + schema"
-  },
-  {
-    id: "ssrf",
-    name: "SSRF Portal",
-    cwe: "CWE-918",
-    lane: 2,
-    hp: 170,
-    impact: 125,
-    reward: 220,
-    color: "#b06cff",
-    code: "fetch(req.body.url)",
-    secure: "allowlist + block private IPs"
-  },
-  {
-    id: "secret",
-    name: "Secret Leak",
-    cwe: "CWE-798",
-    lane: 3,
-    hp: 145,
-    impact: 105,
-    reward: 185,
-    color: "#32d6ff",
-    code: "const API_KEY = \"sk_live_...\"",
-    secure: "secret manager"
-  },
-  {
-    id: "zero-day",
-    name: "BugCrafter Core",
-    cwe: "MULTI",
-    lane: 2,
-    hp: 360,
-    impact: 230,
-    reward: 520,
-    color: "#42e66f",
-    code: "AI pull request contains login + webhook + config risks",
-    secure: "Scanner -> CWE -> RAG -> Patch -> Judge"
-  }
+const THREATS = [
+  { id: "sqli", name: "SQL Creeper", cwe: "CWE-89", color: "#ff4d3d", hp: 70, damage: 55, score: 120 },
+  { id: "ssrf", name: "Portal Ghast", cwe: "CWE-918", color: "#b06cff", hp: 92, damage: 75, score: 160 },
+  { id: "secret", name: "Key Thief", cwe: "CWE-798", color: "#32d6ff", hp: 64, damage: 60, score: 130 },
+  { id: "loader", name: "YAML Slime", cwe: "CWE-502", color: "#ffcf4d", hp: 82, damage: 70, score: 145 }
 ];
 
 const TEAM_BLUEPRINTS = [
-  { id: "redstone", name: "Redstone", color: "#ff4d3d" },
-  { id: "diamond", name: "Diamond", color: "#32d6ff" },
-  { id: "emerald", name: "Emerald", color: "#42e66f" },
-  { id: "nether", name: "Nether", color: "#b06cff" }
+  { id: "redstone", name: "Redstone", color: "#ff4d3d", x: 170 },
+  { id: "diamond", name: "Diamond", color: "#32d6ff", x: 390 },
+  { id: "emerald", name: "Emerald", color: "#42e66f", x: 610 },
+  { id: "nether", name: "Nether", color: "#b06cff", x: 830 }
 ];
 
 function freshTeams() {
@@ -78,184 +23,133 @@ function freshTeams() {
     ...team,
     score: 0,
     energy: 0,
-    agents: 0,
-    actions: 0
+    shield: 0,
+    shots: 0,
+    hits: 0
   }));
 }
 
 const state = globalThis.__securecraftState || {
   phase: "lobby",
-  roomCode: "RAID",
+  roomCode: "RUN",
   players: {},
   teams: freshTeams(),
   threats: [],
-  defeated: [],
-  feed: [{ type: "system", text: "Lobby open. Players can join the CodeSecure Core Raid." }],
+  blasts: [],
+  coreHp: 1000,
+  maxCoreHp: 1000,
   startedAt: null,
   lastTick: Date.now(),
   nextSpawnAt: 0,
-  coreHp: 1000,
-  maxCoreHp: 1000,
-  shield: 0,
-  combo: 1,
+  feed: [{ type: "system", text: "Lobby open. Join CodeSecure Creeper Run." }],
   winner: null
 };
 
 globalThis.__securecraftState = state;
 
-function nowLabel() {
-  return new Date().toLocaleTimeString();
-}
-
 function pushFeed(text, type = "system") {
-  state.feed.unshift({ type, text, time: nowLabel() });
-  state.feed = state.feed.slice(0, 10);
-}
-
-function teamById(id) {
-  return state.teams.find((team) => team.id === id) || state.teams[0];
+  state.feed.unshift({ text, type, time: new Date().toLocaleTimeString() });
+  state.feed = state.feed.slice(0, 8);
 }
 
 function playerList() {
   return Object.values(state.players);
 }
 
+function teamById(id) {
+  return state.teams.find((team) => team.id === id) || state.teams[0];
+}
+
 function elapsed(now = Date.now()) {
   return state.startedAt ? Math.max(0, now - state.startedAt) : 0;
 }
 
-function spawnThreat(now) {
+function spawn(now) {
   const t = elapsed(now);
-  let type;
-  if (t > ROUND_MS - 30000 && !state.threats.some((x) => x.type === "zero-day") && !state.defeated.some((x) => x.type === "zero-day")) {
-    type = THREAT_TYPES.find((item) => item.id === "zero-day");
-  } else {
-    const pool = THREAT_TYPES.filter((item) => item.id !== "zero-day");
-    type = pool[Math.floor((t / 7000 + state.threats.length) % pool.length)];
-  }
-
-  const scale = 1 + Math.min(0.8, t / ROUND_MS);
-  const threat = {
+  const type = THREATS[Math.floor((t / 4200 + state.threats.length) % THREATS.length)];
+  const scale = 1 + Math.min(1.1, t / ROUND_MS);
+  const x = 80 + Math.floor(Math.random() * (WIDTH - 160));
+  state.threats.push({
     id: crypto.randomUUID(),
     type: type.id,
     name: type.name,
     cwe: type.cwe,
-    lane: type.lane,
+    color: type.color,
+    x,
+    y: -40,
     hp: Math.round(type.hp * scale),
     maxHp: Math.round(type.hp * scale),
-    impact: Math.round(type.impact * scale),
-    reward: Math.round(type.reward * scale),
-    color: type.color,
-    code: type.code,
-    secure: type.secure,
-    spawnAt: now,
-    reachAt: now + (type.id === "zero-day" ? 28000 : 23000 - Math.min(5500, t / 18)),
-    scanned: false
-  };
-
-  state.threats.push(threat);
-  pushFeed(`${threat.name} entered ${LANES[threat.lane]} lane.`, "warning");
+    damage: Math.round(type.damage * scale),
+    score: Math.round(type.score * scale),
+    speed: 78 + Math.random() * 48 + t / 1800,
+    createdAt: now
+  });
 }
 
-function applyCoreDamage(amount) {
-  const blocked = Math.min(state.shield, amount);
-  state.shield -= blocked;
-  const damage = amount - blocked;
-  state.coreHp = Math.max(0, state.coreHp - damage);
-  if (damage > 0) pushFeed(`Server core took ${damage} damage.`, "danger");
-  if (blocked > 0) pushFeed(`CodeSecure firewall blocked ${blocked} damage.`, "success");
-}
-
-function defeatThreat(threat, team, actorName, source) {
-  state.threats = state.threats.filter((item) => item.id !== threat.id);
-  state.defeated.push({ type: threat.type, name: threat.name, team: team.id, at: Date.now() });
-  state.defeated = state.defeated.slice(-20);
-  const points = Math.round(threat.reward * state.combo);
-  team.score += points;
-  team.energy = Math.min(100, team.energy + 24);
-  team.actions += 1;
-  state.combo = Math.min(5, state.combo + 0.15);
-  pushFeed(`${actorName} neutralized ${threat.name} with ${source}. +${points}`, "success");
-}
-
-function runAgentBursts() {
-  for (const team of state.teams) {
-    if (team.energy < 100 || state.threats.length === 0) continue;
-    team.energy = 0;
-    team.agents += 1;
-    const damage = 78 + team.agents * 8;
-    for (const threat of state.threats) {
-      threat.hp -= damage;
-      threat.scanned = true;
-    }
-    team.score += 180;
-    state.shield = Math.min(420, state.shield + 70);
-    pushFeed(`Team ${team.name} triggered CodeSecure Agent Burst.`, "power");
-  }
+function addBlast(x, y, color, label) {
+  state.blasts.push({ id: crypto.randomUUID(), x, y, color, label, at: Date.now() });
+  state.blasts = state.blasts.slice(-18);
 }
 
 function advance(now = Date.now()) {
   if (state.phase !== "running") return;
+  const dt = Math.min(0.12, Math.max(0, (now - state.lastTick) / 1000));
+  state.lastTick = now;
 
-  if (state.startedAt && now - state.startedAt >= ROUND_MS) {
+  if (now - state.startedAt >= ROUND_MS) {
     state.phase = "ended";
     state.winner = [...state.teams].sort((a, b) => b.score - a.score)[0] || null;
-    pushFeed(`Raid complete. Team ${state.winner ? state.winner.name : "CodeSecure"} leads the defense.`, "success");
+    pushFeed(`Time. ${state.winner.name} wins the bug bounty run.`, "success");
     return;
   }
 
   if (now >= state.nextSpawnAt) {
-    spawnThreat(now);
-    const pressure = Math.max(3600, 7400 - elapsed(now) / 45);
-    state.nextSpawnAt = now + pressure;
+    spawn(now);
+    state.nextSpawnAt = now + Math.max(520, 1250 - elapsed(now) / 120);
   }
 
   for (const threat of [...state.threats]) {
-    if (threat.hp <= 0) {
-      const team = [...state.teams].sort((a, b) => b.energy - a.energy)[0] || state.teams[0];
-      defeatThreat(threat, team, "CodeSecure", "auto-patch");
-      continue;
-    }
-    if (now >= threat.reachAt) {
+    threat.y += threat.speed * dt;
+    if (threat.y >= HEIGHT - 90) {
+      const shieldTeam = state.teams.find((team) => team.shield > 0);
+      if (shieldTeam) {
+        shieldTeam.shield = Math.max(0, shieldTeam.shield - threat.damage);
+        shieldTeam.score += 35;
+        addBlast(threat.x, threat.y, shieldTeam.color, "BLOCK");
+      } else {
+        state.coreHp = Math.max(0, state.coreHp - threat.damage);
+        addBlast(threat.x, threat.y, threat.color, "HIT");
+      }
       state.threats = state.threats.filter((item) => item.id !== threat.id);
-      applyCoreDamage(threat.impact);
-      state.combo = 1;
     }
   }
 
-  runAgentBursts();
+  state.blasts = state.blasts.filter((blast) => now - blast.at < 1400);
 
   if (state.coreHp <= 0) {
     state.phase = "ended";
     state.winner = [...state.teams].sort((a, b) => b.score - a.score)[0] || null;
-    pushFeed("Server core collapsed. Check the scoreboard for the best defenders.", "danger");
+    pushFeed("Server core crashed. Highest bounty score takes it.", "danger");
   }
 }
 
 function snapshot(joinUrl) {
   advance();
-  const now = Date.now();
   return {
     phase: state.phase,
     roomCode: state.roomCode,
     players: playerList(),
     teams: state.teams,
-    threats: state.threats.map((threat) => ({
-      ...threat,
-      progress: Math.max(0, Math.min(1, (now - threat.spawnAt) / (threat.reachAt - threat.spawnAt)))
-    })),
-    defeated: state.defeated,
-    feed: state.feed,
+    threats: state.threats,
+    blasts: state.blasts,
     coreHp: state.coreHp,
     maxCoreHp: state.maxCoreHp,
-    shield: state.shield,
-    combo: state.combo,
     startedAt: state.startedAt,
     durationMs: ROUND_MS,
-    elapsedMs: elapsed(now),
-    lanes: LANES,
-    threatTypes: THREAT_TYPES,
+    elapsedMs: elapsed(),
+    feed: state.feed,
     winner: state.winner,
+    arena: { width: WIDTH, height: HEIGHT },
     joinUrl
   };
 }
@@ -265,107 +159,116 @@ function join(body) {
   const team = teamById(body.team);
   state.players[id] = {
     id,
-    name: String(body.name || "Operator").slice(0, 18),
+    name: String(body.name || "Player").slice(0, 18),
     team: team.id,
     score: 0,
     actions: 0,
-    lastActionAt: {},
-    joinedAt: Date.now()
+    lastActionAt: {}
   };
-  pushFeed(`${state.players[id].name} joined Team ${team.name}.`, "join");
+  pushFeed(`${state.players[id].name} joined ${team.name}.`, "join");
   return { ok: true, playerId: id };
+}
+
+function cooldown(player, kind, ms) {
+  const now = Date.now();
+  const last = player.lastActionAt[kind] || 0;
+  if (now - last < ms) return false;
+  player.lastActionAt[kind] = now;
+  return true;
 }
 
 function action(body) {
   advance();
   const player = state.players[body.playerId];
-  if (!player || state.phase !== "running") return { ok: false, message: "Raid is not running." };
-
+  if (!player || state.phase !== "running") return { ok: false, message: "Game not running." };
+  const team = teamById(player.team);
   const kind = String(body.kind || "");
-  const cooldowns = { scan: 900, patch: 1600, shield: 2600, overclock: 3200 };
-  const last = player.lastActionAt[kind] || 0;
-  const now = Date.now();
-  if (now - last < (cooldowns[kind] || 1000)) {
-    return { ok: false, message: "Action cooling down." };
-  }
-  player.lastActionAt[kind] = now;
   player.actions += 1;
 
-  const team = teamById(player.team);
-  const target = [...state.threats].sort((a, b) => b.progress - a.progress)[0];
-  let score = 0;
-  let message = "";
+  if (kind === "left" && cooldown(player, kind, 120)) {
+    team.x = Math.max(55, team.x - 42);
+    return { ok: true, message: "Moved left." };
+  }
 
-  if (kind === "scan") {
-    if (target) {
-      target.scanned = true;
-      target.hp -= 18;
+  if (kind === "right" && cooldown(player, kind, 120)) {
+    team.x = Math.min(WIDTH - 55, team.x + 42);
+    return { ok: true, message: "Moved right." };
+  }
+
+  if (kind === "shield" && cooldown(player, kind, 1800)) {
+    team.shield = Math.min(220, team.shield + 85);
+    team.energy = Math.min(100, team.energy + 8);
+    team.score += 20;
+    player.score += 20;
+    addBlast(team.x, HEIGHT - 100, team.color, "SHIELD");
+    return { ok: true, message: "Firewall shield up." };
+  }
+
+  if (kind === "shoot" && cooldown(player, kind, 420)) {
+    team.shots += 1;
+    const target = state.threats
+      .filter((threat) => Math.abs(threat.x - team.x) < 92)
+      .sort((a, b) => b.y - a.y)[0];
+    if (!target) {
+      addBlast(team.x, HEIGHT - 138, team.color, "MISS");
+      return { ok: true, message: "Patch shot missed." };
     }
-    team.energy = Math.min(100, team.energy + 12);
-    score = 22;
-    message = "Scanner ping sent.";
-  }
 
-  if (kind === "patch") {
-    if (target) {
-      const damage = target.scanned ? 68 : 46;
-      target.hp -= damage;
-      score = damage;
-      message = `Patch packet hit ${target.name}.`;
-      if (target.hp <= 0) defeatThreat(target, team, player.name, "manual patch");
-    } else {
-      score = 10;
-      message = "No active threat. Patch cached.";
+    const damage = 44 + Math.round(team.energy / 6);
+    target.hp -= damage;
+    team.energy = Math.min(100, team.energy + 10);
+    team.hits += 1;
+    player.score += 18;
+    team.score += 18;
+    addBlast(target.x, target.y, team.color, "PATCH");
+
+    if (target.hp <= 0) {
+      state.threats = state.threats.filter((item) => item.id !== target.id);
+      team.score += target.score;
+      player.score += Math.round(target.score * 0.45);
+      team.energy = Math.min(100, team.energy + 18);
+      pushFeed(`${player.name} patched ${target.name}. +${target.score}`, "success");
     }
-    team.energy = Math.min(100, team.energy + 16);
+    return { ok: true, message: `Patch shot hit ${target.name}.` };
   }
 
-  if (kind === "shield") {
-    state.shield = Math.min(420, state.shield + 46);
-    team.energy = Math.min(100, team.energy + 9);
-    score = 34;
-    message = "Firewall shield reinforced.";
+  if (kind === "ultimate" && team.energy >= 100 && cooldown(player, kind, 4000)) {
+    team.energy = 0;
+    let cleared = 0;
+    for (const threat of [...state.threats]) {
+      if (Math.abs(threat.x - team.x) < 190 || threat.y > HEIGHT * 0.48) {
+        cleared += 1;
+        team.score += threat.score;
+        player.score += Math.round(threat.score * 0.3);
+        addBlast(threat.x, threat.y, team.color, "AGENT");
+        state.threats = state.threats.filter((item) => item.id !== threat.id);
+      }
+    }
+    pushFeed(`${team.name} fired CodeSecure Agent Burst and cleared ${cleared}.`, "power");
+    return { ok: true, message: `Agent Burst cleared ${cleared} threats.` };
   }
 
-  if (kind === "overclock") {
-    for (const threat of state.threats) threat.hp -= 28;
-    team.energy = Math.min(100, team.energy + 22);
-    score = 55;
-    message = "Multi-agent overclock fired.";
-  }
-
-  player.score += score;
-  team.score += score;
-  team.actions += 1;
-  pushFeed(`${player.name}: ${message}`, "power");
-  advance();
-  return { ok: true, score, message };
+  return { ok: false, message: "Cooling down or not enough energy." };
 }
 
 function host(actionName) {
   if (actionName === "start") {
     state.phase = "running";
-    state.startedAt = Date.now();
-    state.lastTick = state.startedAt;
-    state.nextSpawnAt = state.startedAt + 1000;
-    state.threats = [];
-    state.defeated = [];
-    state.coreHp = state.maxCoreHp;
-    state.shield = 120;
-    state.combo = 1;
-    state.winner = null;
-    for (const team of state.teams) {
-      team.score = 0;
-      team.energy = 0;
-      team.agents = 0;
-      team.actions = 0;
-    }
+    state.players = { ...state.players };
+    state.teams = freshTeams();
     for (const player of playerList()) {
       player.score = 0;
       player.actions = 0;
       player.lastActionAt = {};
     }
-    state.feed = [{ type: "system", text: "Raid started. Defend the server core." }];
+    state.threats = [];
+    state.blasts = [];
+    state.coreHp = state.maxCoreHp;
+    state.startedAt = Date.now();
+    state.lastTick = state.startedAt;
+    state.nextSpawnAt = state.startedAt + 600;
+    state.winner = null;
+    state.feed = [{ type: "system", text: "Creeper Run started. Patch mobs before they hit the core." }];
     return { ok: true };
   }
 
@@ -374,14 +277,12 @@ function host(actionName) {
     state.players = {};
     state.teams = freshTeams();
     state.threats = [];
-    state.defeated = [];
+    state.blasts = [];
+    state.coreHp = state.maxCoreHp;
     state.startedAt = null;
     state.nextSpawnAt = 0;
-    state.coreHp = state.maxCoreHp;
-    state.shield = 0;
-    state.combo = 1;
     state.winner = null;
-    state.feed = [{ type: "system", text: "Lobby reset. Players can join the next Core Raid." }];
+    state.feed = [{ type: "system", text: "Lobby reset. Join CodeSecure Creeper Run." }];
     return { ok: true };
   }
 
