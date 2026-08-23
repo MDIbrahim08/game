@@ -7,14 +7,22 @@ function cleanRoom(value) {
 }
 
 function kvConfigured() {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+  return Boolean(redisUrl() && redisToken());
+}
+
+function redisUrl() {
+  return process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+}
+
+function redisToken() {
+  return process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 }
 
 async function kvCommand(command) {
-  const response = await fetch(process.env.KV_REST_API_URL, {
+  const response = await fetch(redisUrl(), {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
+      Authorization: `Bearer ${redisToken()}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(command),
