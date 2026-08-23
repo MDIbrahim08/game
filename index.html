@@ -3,26 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CodeSecure Creeper Run</title>
+  <title>CodeSecure Escape Room</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800;900&family=JetBrains+Mono:wght@700&family=Press+Start+2P&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800;900&family=JetBrains+Mono:wght@600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
-      --bg: #071019;
-      --panel: rgba(8, 17, 28, 0.86);
-      --line: rgba(91, 231, 255, 0.25);
+      --bg: #050913;
+      --panel: rgba(9, 17, 29, 0.88);
+      --line: rgba(84, 220, 255, 0.24);
       --text: #f7fbff;
-      --muted: #9eb3c7;
-      --cyan: #32d6ff;
-      --green: #42e66f;
+      --muted: #9db2c4;
+      --cyan: #35d8ff;
+      --green: #46e676;
       --gold: #ffcf4d;
-      --red: #ff4d3d;
-      --purple: #b06cff;
+      --red: #ff5548;
+      --purple: #ad76ff;
     }
-
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -30,59 +29,41 @@
       color: var(--text);
       font-family: Inter, system-ui, sans-serif;
       background:
-        radial-gradient(circle at 50% 8%, rgba(50,214,255,0.2), transparent 28%),
-        radial-gradient(circle at 12% 78%, rgba(66,230,111,0.13), transparent 25%),
-        linear-gradient(180deg, #071019, #091522 55%, #07140d);
-      overflow-x: hidden;
+        radial-gradient(circle at 22% 20%, rgba(53,216,255,0.18), transparent 28%),
+        radial-gradient(circle at 80% 5%, rgba(173,118,255,0.16), transparent 28%),
+        linear-gradient(180deg, #050913, #08131f 58%, #0b130c);
     }
-
-    button, input, select { font: inherit; }
+    button, input { font: inherit; }
     button { cursor: pointer; }
     h1, h2, h3, p { margin: 0; }
     .hidden { display: none !important; }
-
-    .host {
-      min-height: 100vh;
-      padding: 14px;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 12px;
-    }
-
-    .topbar, .panel {
+    .host, .phone { min-height: 100vh; padding: 14px; position: relative; }
+    .panel, .topbar {
       background: var(--panel);
       border: 1px solid var(--line);
-      box-shadow: 0 20px 70px rgba(0,0,0,0.34);
+      box-shadow: 0 22px 80px rgba(0,0,0,0.34);
       backdrop-filter: blur(14px);
     }
-
     .topbar {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 12px;
+      gap: 14px;
       align-items: center;
-      padding: 12px 14px;
+      padding: 14px;
+      margin-bottom: 14px;
     }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .block-logo {
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .logo {
       width: 52px;
       height: 52px;
       display: grid;
       place-items: center;
       font-family: "Press Start 2P", monospace;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,0.25), transparent 36%),
-        linear-gradient(45deg, #4da54b 0 45%, #7c5437 45% 100%);
+      font-size: 16px;
+      background: linear-gradient(45deg, #4a9b45 0 45%, #765033 45%);
       border: 3px solid rgba(255,255,255,0.18);
-      box-shadow: 0 0 32px rgba(50,214,255,0.38);
+      box-shadow: 0 0 30px rgba(53,216,255,0.38);
     }
-
     .eyebrow {
       color: var(--cyan);
       font-size: 11px;
@@ -90,19 +71,8 @@
       text-transform: uppercase;
       font-weight: 900;
     }
-
-    h1 {
-      font-size: clamp(28px, 3.4vw, 54px);
-      line-height: 0.96;
-    }
-
-    .pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-
+    h1 { font-size: clamp(28px, 3.2vw, 52px); line-height: 0.98; }
+    .pills { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
     .pill {
       padding: 9px 11px;
       background: rgba(255,255,255,0.06);
@@ -112,184 +82,124 @@
       font-size: 12px;
       font-weight: 900;
     }
-
-    .main-grid {
+    .grid {
       display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: 12px;
-      min-height: 0;
+      grid-template-columns: 1fr 360px;
+      gap: 14px;
     }
-
-    .game-panel {
-      padding: 12px;
+    .panel { padding: 14px; }
+    .map {
+      min-height: 560px;
       display: grid;
       grid-template-rows: auto 1fr auto;
-      gap: 10px;
-      overflow: hidden;
+      gap: 13px;
     }
-
-    .hud {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .meter {
-      background: rgba(255,255,255,0.055);
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 10px;
-    }
-
-    .meter-head {
-      display: flex;
-      justify-content: space-between;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 900;
-      margin-bottom: 7px;
-    }
-
-    .bar {
-      height: 13px;
-      background: rgba(255,255,255,0.1);
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--green), var(--cyan));
-      transition: width 220ms ease;
-    }
-
-    .fill.red { background: linear-gradient(90deg, var(--red), var(--gold)); }
-
-    #arena {
-      width: 100%;
-      min-height: 590px;
+    .stage-wrap {
       position: relative;
+      min-height: 430px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      background:
+        radial-gradient(circle at 50% 46%, rgba(53,216,255,0.12), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
+        #040912;
+    }
+    #stage3d {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .stage-overlay {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      pointer-events: none;
+    }
+    .artifact {
+      padding: 9px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(5,9,19,0.7);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      text-align: center;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.035);
+    }
+    .artifact.active {
+      color: var(--gold);
+      border-color: rgba(255,207,77,0.55);
+      box-shadow: 0 0 22px rgba(255,207,77,0.18), inset 0 0 0 1px rgba(255,207,77,0.16);
+    }
+    .rooms {
+      position: relative;
+      min-height: 405px;
+      border: 1px solid rgba(255,255,255,0.1);
       overflow: hidden;
       background:
-        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0/42px 42px,
-        linear-gradient(0deg, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0/42px 42px,
-        radial-gradient(circle at 50% 85%, rgba(50,214,255,0.14), transparent 34%),
-        #050b13;
-      border: 1px solid rgba(255,255,255,0.1);
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 40px 40px,
+        linear-gradient(0deg, rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 40px 40px,
+        radial-gradient(circle at 50% 50%, rgba(53,216,255,0.08), transparent 32%),
+        #050b14;
     }
-
-    .core {
+    .path {
       position: absolute;
-      left: 50%;
-      bottom: 18px;
-      width: 180px;
-      height: 70px;
-      transform: translateX(-50%);
-      display: grid;
-      place-items: center;
-      text-align: center;
-      font-family: "Press Start 2P", monospace;
-      font-size: 11px;
-      line-height: 1.55;
-      background: radial-gradient(circle, rgba(120,247,255,0.62), rgba(50,214,255,0.16) 55%, rgba(5,10,18,0.95));
-      border: 2px solid rgba(120,247,255,0.72);
-      box-shadow: 0 0 52px rgba(50,214,255,0.45);
+      left: 9%;
+      right: 9%;
+      top: 50%;
+      height: 7px;
+      background: linear-gradient(90deg, var(--red), var(--gold), var(--cyan), var(--green), var(--purple));
+      opacity: 0.38;
+      box-shadow: 0 0 28px rgba(53,216,255,0.35);
     }
-
-    .team {
+    .room {
       position: absolute;
-      bottom: 105px;
-      width: 64px;
-      height: 64px;
-      margin-left: -32px;
-      border: 2px solid currentColor;
-      background: rgba(255,255,255,0.08);
-      box-shadow: 0 0 28px currentColor;
-      display: grid;
-      place-items: center;
-      font-family: "Press Start 2P", monospace;
-      font-size: 20px;
-      transition: left 180ms linear;
+      width: 170px;
+      min-height: 116px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(7, 15, 26, 0.9);
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,0.035), 0 18px 45px rgba(0,0,0,0.32);
     }
-
-    .team::after {
-      content: attr(data-name);
+    .room:nth-child(2) { left: 5%; top: 52%; }
+    .room:nth-child(3) { left: 23%; top: 18%; }
+    .room:nth-child(4) { left: 44%; top: 53%; }
+    .room:nth-child(5) { left: 64%; top: 19%; }
+    .room:nth-child(6) { right: 4%; top: 52%; }
+    .room h3 { font-size: 15px; line-height: 1.12; margin-bottom: 8px; }
+    .room small { color: var(--muted); }
+    .token {
       position: absolute;
-      top: 70px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #fff;
-      font-family: Inter, sans-serif;
-      font-size: 11px;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    .threat {
-      position: absolute;
-      width: 88px;
-      height: 88px;
-      margin-left: -44px;
-      border: 2px solid currentColor;
-      background: rgba(15, 21, 30, 0.94);
-      box-shadow: 0 0 30px currentColor;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      padding: 7px;
-      font-size: 11px;
-      font-weight: 900;
-      line-height: 1.1;
-      transition: top 360ms linear, left 160ms linear;
-    }
-
-    .hp {
-      position: absolute;
-      left: 8px;
-      right: 8px;
-      bottom: 7px;
-      height: 6px;
-      background: rgba(255,255,255,0.14);
-    }
-    .hp span { display: block; height: 100%; background: currentColor; }
-
-    .blast {
-      position: absolute;
-      width: 78px;
-      height: 78px;
-      margin-left: -39px;
-      margin-top: -39px;
-      display: grid;
-      place-items: center;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
-      border: 2px solid currentColor;
-      background: rgba(255,255,255,0.08);
-      color: var(--gold);
+      display: grid;
+      place-items: center;
+      font-size: 11px;
       font-weight: 900;
-      box-shadow: 0 0 42px currentColor;
-      animation: pop 1s ease forwards;
+      background: var(--gold);
+      color: #090d14;
+      box-shadow: 0 0 20px var(--gold);
+      transition: left 350ms ease, top 350ms ease;
     }
-
-    @keyframes pop {
-      from { transform: scale(0.4); opacity: 1; }
-      to { transform: scale(1.45); opacity: 0; }
-    }
-
     .join-card {
       display: grid;
       grid-template-columns: 142px 1fr;
-      gap: 12px;
+      gap: 13px;
       align-items: center;
     }
-
     .qr {
-      background: #fff;
       width: 142px;
       min-height: 142px;
       padding: 8px;
-      border: 4px solid #050a12;
+      background: #fff;
+      border: 4px solid #050913;
     }
-
     .join-url {
       color: var(--muted);
       font-family: "JetBrains Mono", monospace;
@@ -297,56 +207,37 @@
       font-size: 12px;
       margin-top: 7px;
     }
-
-    .side {
-      display: grid;
-      gap: 12px;
-      align-content: start;
-    }
-
-    .panel { padding: 13px; }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
+    .side { display: grid; gap: 14px; align-content: start; }
     .btn {
+      width: 100%;
       border: 1px solid rgba(255,255,255,0.16);
       color: var(--text);
-      background: linear-gradient(180deg, rgba(50,214,255,0.26), rgba(50,214,255,0.08));
+      background: linear-gradient(180deg, rgba(53,216,255,0.28), rgba(53,216,255,0.08));
       padding: 12px;
       font-weight: 900;
     }
-    .btn.green { background: linear-gradient(180deg, rgba(66,230,111,0.32), rgba(66,230,111,0.08)); }
-    .btn.red { background: linear-gradient(180deg, rgba(255,77,61,0.34), rgba(255,77,61,0.08)); }
-
+    .btn.green { background: linear-gradient(180deg, rgba(70,230,118,0.34), rgba(70,230,118,0.08)); }
+    .btn.red { background: linear-gradient(180deg, rgba(255,85,72,0.34), rgba(255,85,72,0.08)); }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
     .list, .feed { display: grid; gap: 8px; margin-top: 10px; }
     .row {
       display: grid;
       grid-template-columns: auto 1fr auto;
-      align-items: center;
       gap: 9px;
+      align-items: center;
       padding: 9px;
       background: rgba(255,255,255,0.055);
       border: 1px solid rgba(255,255,255,0.1);
     }
-    .dot { width: 13px; height: 13px; background: currentColor; box-shadow: 0 0 16px currentColor; }
+    .rank { color: var(--gold); font-family: "JetBrains Mono", monospace; font-weight: 900; }
     .row strong { font-size: 14px; }
     .row small { display: block; color: var(--muted); margin-top: 2px; }
-    .score { color: var(--gold); font-family: "JetBrains Mono", monospace; font-weight: 900; }
-
-    .feed {
-      max-height: 250px;
-      overflow: auto;
-    }
+    .feed { max-height: 260px; overflow: auto; }
     .feed div {
-      border-left: 3px solid var(--cyan);
-      background: rgba(255,255,255,0.045);
       padding: 8px;
-      color: #dcecff;
+      background: rgba(255,255,255,0.045);
+      border-left: 3px solid var(--cyan);
+      color: #ddecff;
       font-size: 12px;
       line-height: 1.35;
     }
@@ -356,18 +247,15 @@
 
     .phone {
       max-width: 620px;
-      min-height: 100vh;
       margin: 0 auto;
-      padding: 14px;
       display: grid;
       align-content: start;
       gap: 12px;
     }
-
     .join-screen { margin-top: 10vh; display: grid; gap: 13px; }
     .join-screen h1 { font-size: 36px; }
-    label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 900; }
-    input, select {
+    label { display: grid; gap: 7px; color: var(--muted); font-weight: 900; font-size: 13px; }
+    input {
       width: 100%;
       color: var(--text);
       background: rgba(255,255,255,0.075);
@@ -375,25 +263,27 @@
       padding: 14px;
       outline: none;
     }
-
-    .pad {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    .code {
+      white-space: pre-wrap;
+      font-family: "JetBrains Mono", monospace;
+      color: #dfffe9;
+      background: #050a12;
+      border: 1px solid rgba(53,216,255,0.18);
+      padding: 13px;
+      line-height: 1.5;
+      overflow: auto;
     }
-    .pad .action {
-      min-height: 116px;
-      border: 1px solid rgba(255,255,255,0.15);
-      color: var(--text);
-      background: rgba(255,255,255,0.06);
+    .options { display: grid; gap: 9px; margin-top: 12px; }
+    .option {
+      width: 100%;
       text-align: left;
-      padding: 14px;
-      box-shadow: 0 16px 42px rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text);
+      background: rgba(255,255,255,0.065);
+      padding: 13px;
+      line-height: 1.35;
+      font-weight: 800;
     }
-    .action strong { display: block; font-size: 22px; margin-bottom: 7px; }
-    .action span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
-    .wide { grid-column: 1 / -1; }
-
     .toast {
       position: fixed;
       left: 50%;
@@ -401,140 +291,141 @@
       transform: translateX(-50%);
       display: none;
       width: min(92vw, 440px);
-      background: rgba(5,10,18,0.94);
+      background: rgba(5,9,19,0.94);
       border: 1px solid var(--line);
       padding: 12px;
       text-align: center;
       font-weight: 900;
-      z-index: 10;
+      z-index: 5;
     }
-
     @media (max-width: 980px) {
-      .topbar, .main-grid, .hud, .join-card { grid-template-columns: 1fr; }
+      .topbar, .grid, .join-card { grid-template-columns: 1fr; }
       .pills { justify-content: flex-start; }
-      #arena { min-height: 520px; }
+      .rooms { min-height: 560px; }
+      .room { width: 42%; }
+      .room:nth-child(2) { left: 5%; top: 10%; }
+      .room:nth-child(3) { left: 53%; top: 22%; }
+      .room:nth-child(4) { left: 5%; top: 43%; }
+      .room:nth-child(5) { left: 53%; top: 55%; }
+      .room:nth-child(6) { left: 28%; top: 77%; right: auto; }
     }
   </style>
 </head>
 <body>
-  <div id="host-app" class="host hidden">
+  <main id="host-app" class="host hidden">
     <header class="topbar">
       <div class="brand">
-        <div class="block-logo">CS</div>
+        <div class="logo">CS</div>
         <div>
-          <div class="eyebrow">Minecraft arcade multiplayer</div>
-          <h1>CodeSecure Creeper Run</h1>
+          <div class="eyebrow">Individual live challenge</div>
+          <h1>CodeSecure Escape Room</h1>
         </div>
       </div>
       <div class="pills">
         <div class="pill" id="phase">LOBBY</div>
-        <div class="pill" id="timer">02:00</div>
+        <div class="pill" id="timer">08:00</div>
         <div class="pill" id="players">0 PLAYERS</div>
-        <div class="pill">ROOM RUN</div>
+        <div class="pill" id="escaped">0 ESCAPED</div>
       </div>
     </header>
-
-    <main class="main-grid">
-      <section class="panel game-panel">
-        <div class="hud">
-          <div class="meter">
-            <div class="meter-head"><span>Server Core</span><span id="core-label">1000</span></div>
-            <div class="bar"><div class="fill red" id="core-fill"></div></div>
-          </div>
-          <div class="meter">
-            <div class="meter-head"><span>Active Threats</span><span id="threat-label">0</span></div>
-            <div class="bar"><div class="fill" id="threat-fill"></div></div>
-          </div>
+    <section class="grid">
+      <div class="panel map">
+        <div>
+          <div class="eyebrow">Dungeon Map</div>
+          <h2>Recover the Diamond Patch before time runs out.</h2>
         </div>
-        <div id="arena">
-          <div class="core" id="core-box">SERVER<br>CORE</div>
+        <div class="stage-wrap">
+          <canvas id="stage3d"></canvas>
+          <div class="stage-overlay" id="artifact-strip"></div>
+        </div>
+        <div class="rooms" id="rooms">
+          <div class="path"></div>
+          <article class="room"><h3>Login Gate</h3><small>Scanner Lens</small></article>
+          <article class="room"><h3>Potion Lab</h3><small>CWE Compass</small></article>
+          <article class="room"><h3>Nether Relay</h3><small>RAG Scroll</small></article>
+          <article class="room"><h3>Secret Vault</h3><small>Patch Hammer</small></article>
+          <article class="room"><h3>Server Core</h3><small>Diamond Patch</small></article>
         </div>
         <div class="join-card">
           <div id="qr" class="qr"></div>
           <div>
-            <div class="eyebrow">Join with phone</div>
-            <h2>Move, shoot patches, shield the server core.</h2>
+            <div class="eyebrow">Join Solo</div>
+            <h2>Scan QR. Solve rooms on your phone. TV tracks the race.</h2>
             <p class="join-url" id="join-url">Loading...</p>
           </div>
         </div>
-      </section>
-
+      </div>
       <aside class="side">
         <section class="panel">
           <div class="eyebrow">Host Control</div>
           <div class="controls">
-            <button class="btn green" onclick="hostAction('start')">Start Game</button>
+            <button class="btn green" onclick="hostAction('start')">Start</button>
             <button class="btn red" onclick="hostAction('reset')">Reset</button>
           </div>
+          <button class="btn" style="margin-top:8px" onclick="toggleSound()">Sound FX</button>
         </section>
         <section class="panel">
-          <div class="eyebrow">Teams</div>
-          <div class="list" id="teams"></div>
+          <div class="eyebrow">Leaderboard</div>
+          <div class="list" id="leaderboard"></div>
         </section>
         <section class="panel">
-          <div class="eyebrow">Top Players</div>
-          <div class="list" id="top-players"></div>
-        </section>
-        <section class="panel">
-          <div class="eyebrow">Game Feed</div>
+          <div class="eyebrow">Live Feed</div>
           <div class="feed" id="feed"></div>
         </section>
       </aside>
-    </main>
-  </div>
+    </section>
+  </main>
 
-  <div id="player-app" class="phone hidden">
+  <main id="player-app" class="phone hidden">
     <section id="join-screen" class="panel join-screen">
-      <div class="block-logo">CS</div>
+      <div class="logo">CS</div>
       <div>
-        <div class="eyebrow">Phone controller</div>
-        <h1>Join Creeper Run</h1>
+        <div class="eyebrow">Solo escape room</div>
+        <h1>Enter Dungeon</h1>
       </div>
-      <label>Player name<input id="name-input" maxlength="18" placeholder="Your name"></label>
-      <label>Team<select id="team-input">
-        <option value="redstone">Redstone</option>
-        <option value="diamond">Diamond</option>
-        <option value="emerald">Emerald</option>
-        <option value="nether">Nether</option>
-      </select></label>
-      <button class="btn green" onclick="joinGame()">Join Game</button>
+      <label>Name<input id="name-input" maxlength="18" placeholder="Your name"></label>
+      <button class="btn green" onclick="joinGame()">Join</button>
     </section>
 
     <section id="play-screen" class="hidden">
       <div class="panel">
-        <div class="eyebrow" id="player-team">Controller</div>
+        <div class="eyebrow" id="player-status">Waiting</div>
         <h2 id="player-name">Player</h2>
         <div class="pills" style="justify-content:flex-start;margin-top:10px">
-          <div class="pill score" id="player-score">0</div>
-          <div class="pill" id="player-phase">LOBBY</div>
+          <div class="pill" id="player-score">0</div>
+          <div class="pill" id="player-room">Room 1/5</div>
         </div>
       </div>
-      <div class="panel">
-        <div class="meter-head"><span>Team Energy</span><span id="energy-label">0%</span></div>
-        <div class="bar"><div class="fill" id="energy-fill"></div></div>
-      </div>
-      <div class="pad">
-        <button class="action" onclick="sendAction('left')"><strong>Left</strong><span>Dodge and line up your defender.</span></button>
-        <button class="action" onclick="sendAction('right')"><strong>Right</strong><span>Move toward incoming mobs.</span></button>
-        <button class="action" onclick="sendAction('shoot')"><strong>Patch</strong><span>Fire a secure patch upward.</span></button>
-        <button class="action" onclick="sendAction('shield')"><strong>Shield</strong><span>Protect the server core.</span></button>
-        <button class="action wide" onclick="sendAction('ultimate')"><strong>Agent Burst</strong><span>At 100% energy, CodeSecure clears nearby threats.</span></button>
-      </div>
-      <div class="panel">
-        <div class="eyebrow">Nearest Threat</div>
-        <p id="target" style="color:var(--muted);line-height:1.45;margin-top:8px">Waiting for game start.</p>
-      </div>
+      <section class="panel">
+        <div class="eyebrow" id="room-cwe">CWE LOCK</div>
+        <h2 id="room-title">Waiting for start</h2>
+        <p id="room-brief" style="color:var(--muted);line-height:1.45;margin-top:8px"></p>
+        <pre class="code" id="room-code">The host will start the escape room.</pre>
+      </section>
+      <section class="panel">
+        <div class="eyebrow">Patch Lock</div>
+        <h3 id="question" style="margin-top:8px">Choose the secure patch.</h3>
+        <div class="options" id="options"></div>
+      </section>
+      <section class="panel">
+        <div class="eyebrow">Artifacts</div>
+        <p id="artifacts" style="color:var(--gold);line-height:1.45;margin-top:8px">None yet</p>
+      </section>
     </section>
-  </div>
+  </main>
 
-  <div class="toast" id="toast"></div>
+  <div id="toast" class="toast"></div>
 
   <script>
     const isPlayer = new URLSearchParams(location.search).has("player");
     const stateRef = { current: null };
-    let playerId = localStorage.getItem("creeperrun_player_id") || "";
+    let playerId = localStorage.getItem("escape_player_id") || "";
     let qrUrl = "";
-
+    let lastPhase = "";
+    let lastEscaped = 0;
+    let soundOn = true;
+    let audioCtx = null;
+    const stage = { ready: false, roomMeshes: [], playerGroup: null, renderer: null, scene: null, camera: null, core: null };
     document.getElementById(isPlayer ? "player-app" : "host-app").classList.remove("hidden");
 
     function browserJoinUrl() {
@@ -566,15 +457,15 @@
 
     async function refresh() {
       try {
-        const response = await fetch("/api/game", { cache: "no-store" });
-        stateRef.current = await response.json();
+        const res = await fetch("/api/game", { cache: "no-store" });
+        stateRef.current = await res.json();
         isPlayer ? renderPlayer() : renderHost();
-      } catch (err) {
+      } catch {
         if (!isPlayer) renderQr(browserJoinUrl());
       }
     }
 
-    setInterval(refresh, 420);
+    setInterval(refresh, 900);
     refresh();
 
     function post(action, body = {}) {
@@ -588,7 +479,6 @@
       });
     }
 
-    function pct(v, max) { return Math.max(0, Math.min(100, (v / max) * 100)); }
     function time(ms) {
       const sec = Math.ceil(Math.max(0, ms) / 1000);
       return `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
@@ -597,77 +487,49 @@
     function renderHost() {
       const s = stateRef.current;
       if (!s) return;
-      renderQr(s.joinUrl || browserJoinUrl());
-      document.getElementById("join-url").textContent = s.joinUrl || browserJoinUrl();
+      initStage();
+      if (lastPhase && lastPhase !== s.phase) playSound(s.phase === "running" ? "start" : "escape");
+      if (s.escaped > lastEscaped) playSound("escape");
+      lastPhase = s.phase;
+      lastEscaped = s.escaped;
+      const join = s.joinUrl || browserJoinUrl();
+      renderQr(join);
+      document.getElementById("join-url").textContent = join;
       document.getElementById("phase").textContent = s.phase.toUpperCase();
-      document.getElementById("timer").textContent = s.phase === "running" ? time(s.durationMs - s.elapsedMs) : "02:00";
+      document.getElementById("timer").textContent = s.phase === "running" ? time(s.durationMs - s.elapsedMs) : "08:00";
       document.getElementById("players").textContent = `${s.players.length} PLAYERS`;
-      document.getElementById("core-label").textContent = `${s.coreHp} / ${s.maxCoreHp}`;
-      document.getElementById("core-fill").style.width = `${pct(s.coreHp, s.maxCoreHp)}%`;
-      document.getElementById("threat-label").textContent = String(s.threats.length);
-      document.getElementById("threat-fill").style.width = `${pct(s.threats.length, 16)}%`;
-      document.getElementById("core-box").innerHTML = s.phase === "ended" && s.winner ? `WINNER<br>${s.winner.name.toUpperCase()}` : "SERVER<br>CORE";
-      drawArena(s);
-      drawTeams(s);
-      drawPlayers(s);
+      document.getElementById("escaped").textContent = `${s.escaped} ESCAPED`;
+      drawLeaderboard(s);
+      drawTokens(s);
       drawFeed(s);
+      drawArtifactStrip(s);
+      updateStage(s);
     }
 
-    function drawArena(s) {
-      const arena = document.getElementById("arena");
-      arena.querySelectorAll(".team,.threat,.blast").forEach((el) => el.remove());
-      const rect = arena.getBoundingClientRect();
-      const scaleX = rect.width / s.arena.width;
-      const scaleY = rect.height / s.arena.height;
-      s.threats.forEach((t) => {
-        const el = document.createElement("div");
-        el.className = "threat";
-        el.style.color = t.color;
-        el.style.left = `${t.x * scaleX}px`;
-        el.style.top = `${t.y * scaleY}px`;
-        el.innerHTML = `${t.name}<br><small>${t.cwe}</small><div class="hp"><span style="width:${pct(t.hp, t.maxHp)}%"></span></div>`;
-        arena.appendChild(el);
-      });
-      s.teams.forEach((team) => {
-        const el = document.createElement("div");
-        el.className = "team";
-        el.dataset.name = team.name;
-        el.style.color = team.color;
-        el.style.left = `${team.x * scaleX}px`;
-        el.textContent = team.name[0];
-        arena.appendChild(el);
-      });
-      s.blasts.forEach((b) => {
-        const el = document.createElement("div");
-        el.className = "blast";
-        el.style.color = b.color;
-        el.style.left = `${b.x * scaleX}px`;
-        el.style.top = `${b.y * scaleY}px`;
-        el.textContent = b.label;
-        arena.appendChild(el);
-      });
-    }
-
-    function drawTeams(s) {
-      const box = document.getElementById("teams");
+    function drawLeaderboard(s) {
+      const box = document.getElementById("leaderboard");
       box.innerHTML = "";
-      [...s.teams].sort((a, b) => b.score - a.score).forEach((team) => {
+      s.players.slice(0, 10).forEach((p, i) => {
         const row = document.createElement("div");
         row.className = "row";
-        row.innerHTML = `<span class="dot" style="color:${team.color}"></span><span><strong>${team.name}</strong><small>Energy ${team.energy}% / Shield ${team.shield}</small></span><span class="score">${team.score}</span>`;
+        row.innerHTML = `<span class="rank">#${i + 1}</span><span><strong>${p.name}</strong><small>${p.escaped ? "Escaped" : `Room ${Math.min(p.room + 1, s.rooms.length)}/${s.rooms.length}`} / mistakes ${p.mistakes}</small></span><span class="rank">${p.score}</span>`;
         box.appendChild(row);
       });
     }
 
-    function drawPlayers(s) {
-      const box = document.getElementById("top-players");
-      box.innerHTML = "";
-      [...s.players].sort((a, b) => b.score - a.score).slice(0, 7).forEach((p, i) => {
-        const team = s.teams.find((t) => t.id === p.team);
-        const row = document.createElement("div");
-        row.className = "row";
-        row.innerHTML = `<span class="score">#${i + 1}</span><span><strong>${p.name}</strong><small>${team ? team.name : "Team"} / ${p.actions} moves</small></span><span class="score">${p.score}</span>`;
-        box.appendChild(row);
+    function drawTokens(s) {
+      const rooms = document.getElementById("rooms");
+      rooms.querySelectorAll(".token").forEach((el) => el.remove());
+      const coords = [[12,68],[30,34],[51,69],[72,35],[88,68]];
+      s.players.slice(0, 24).forEach((p, i) => {
+        const pos = coords[Math.min(p.room, coords.length - 1)];
+        const token = document.createElement("div");
+        token.className = "token";
+        token.style.left = `calc(${pos[0]}% + ${(i % 5) * 8}px)`;
+        token.style.top = `calc(${pos[1]}% + ${Math.floor(i / 5) * 8}px)`;
+        token.textContent = p.name.slice(0, 2).toUpperCase();
+        if (p.escaped) token.style.background = "var(--green)";
+        rooms.appendChild(token);
       });
     }
 
@@ -682,57 +544,207 @@
       });
     }
 
-    function hostAction(action) { post(`host:${action}`); }
+    function drawArtifactStrip(s) {
+      const box = document.getElementById("artifact-strip");
+      box.innerHTML = "";
+      s.rooms.forEach((room, idx) => {
+        const count = s.players.filter((p) => p.room > idx || p.escaped).length;
+        const item = document.createElement("div");
+        item.className = `artifact ${count > 0 ? "active" : ""}`;
+        item.textContent = `${room.artifact} ${count}`;
+        box.appendChild(item);
+      });
+    }
+
+    function hostAction(action) {
+      playSound(action === "start" ? "start" : "tap");
+      post(`host:${action}`);
+    }
 
     async function joinGame() {
-      const name = document.getElementById("name-input").value.trim() || "Player";
-      const team = document.getElementById("team-input").value;
-      const data = await post("join", { name, team });
+      const name = document.getElementById("name-input").value.trim() || "Student";
+      const data = await post("join", { name });
       if (!data.ok) return toast("Join failed.");
+      playSound("tap");
       playerId = data.playerId;
-      localStorage.setItem("creeperrun_player_id", playerId);
+      localStorage.setItem("escape_player_id", playerId);
       document.getElementById("join-screen").classList.add("hidden");
       document.getElementById("play-screen").classList.remove("hidden");
-      toast("Joined. Wait for Start Game.");
+      toast("Joined. Wait for the host to start.");
       renderPlayer();
     }
 
     function renderPlayer() {
       const s = stateRef.current;
       if (!s) return;
-      const p = s.players.find((x) => x.id === playerId);
-      if (!p) {
+      const player = s.players.find((p) => p.id === playerId);
+      if (!player) {
         document.getElementById("join-screen").classList.remove("hidden");
         document.getElementById("play-screen").classList.add("hidden");
         return;
       }
       document.getElementById("join-screen").classList.add("hidden");
       document.getElementById("play-screen").classList.remove("hidden");
-      const team = s.teams.find((t) => t.id === p.team);
-      const target = [...s.threats].sort((a, b) => b.y - a.y)[0];
-      document.getElementById("player-team").textContent = `${team.name} Controller`;
-      document.getElementById("player-name").textContent = p.name;
-      document.getElementById("player-score").textContent = p.score;
-      document.getElementById("player-phase").textContent = s.phase.toUpperCase();
-      document.getElementById("energy-label").textContent = `${team.energy}%`;
-      document.getElementById("energy-fill").style.width = `${team.energy}%`;
-      document.getElementById("target").textContent = target ? `${target.name} ${target.cwe} is closest. Line up and fire Patch.` : "No mob active. Move into position or shield.";
+      document.getElementById("player-status").textContent = player.escaped ? "Escaped" : s.phase;
+      document.getElementById("player-name").textContent = player.name;
+      document.getElementById("player-score").textContent = `${player.score} pts`;
+      document.getElementById("player-room").textContent = player.escaped ? "Complete" : `Room ${Math.min(player.room + 1, s.rooms.length)}/${s.rooms.length}`;
+      document.getElementById("artifacts").textContent = player.artifacts.length ? player.artifacts.join(" + ") : "None yet";
+
+      const room = s.rooms[Math.min(player.room, s.rooms.length - 1)];
+      document.getElementById("room-cwe").textContent = room.cwe;
+      document.getElementById("room-title").textContent = player.escaped ? "Diamond Patch Recovered" : room.title;
+      document.getElementById("room-brief").textContent = player.escaped ? "You escaped the CodeSecure dungeon." : room.brief;
+      document.getElementById("room-code").textContent = player.escaped ? "CodeSecure pipeline complete." : room.code;
+      document.getElementById("question").textContent = player.escaped ? "Wait for the final leaderboard." : room.question;
+      const options = document.getElementById("options");
+      options.innerHTML = "";
+      room.options.forEach((option, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.disabled = s.phase !== "running" || player.escaped;
+        btn.textContent = `${String.fromCharCode(65 + idx)}. ${option}`;
+        btn.onclick = () => submitAnswer(idx);
+        options.appendChild(btn);
+      });
     }
 
-    async function sendAction(kind) {
-      const data = await post("action", { playerId, kind });
-      toast(data.message || "Action sent.");
+    async function submitAnswer(choice) {
+      const data = await post("answer", { playerId, choice });
+      if (!data.ok) return toast("Wait for the host to start.");
+      playSound(data.correct ? "unlock" : "trap");
+      toast(data.correct ? "Unlocked. Next room!" : "Trap triggered. Try again.");
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      playSound("tap");
+    }
+
+    function playSound(kind) {
+      if (!soundOn) return;
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      const gain = audioCtx.createGain();
+      gain.connect(audioCtx.destination);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(kind === "trap" ? 0.13 : 0.09, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.36);
+      const notes = {
+        tap: [420, 620],
+        start: [180, 260, 390, 520],
+        unlock: [520, 780, 1040],
+        trap: [180, 120],
+        escape: [440, 660, 880, 1320]
+      }[kind] || [440];
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        osc.type = kind === "trap" ? "sawtooth" : "triangle";
+        osc.frequency.setValueAtTime(freq, now + i * 0.07);
+        osc.connect(gain);
+        osc.start(now + i * 0.07);
+        osc.stop(now + i * 0.07 + 0.16);
+      });
+    }
+
+    function initStage() {
+      if (isPlayer || stage.ready || !window.THREE) return;
+      const canvas = document.getElementById("stage3d");
+      const wrap = canvas.parentElement;
+      stage.scene = new THREE.Scene();
+      stage.scene.fog = new THREE.Fog(0x040912, 7, 18);
+      stage.camera = new THREE.PerspectiveCamera(48, wrap.clientWidth / wrap.clientHeight, 0.1, 80);
+      stage.camera.position.set(0, 5.4, 10.5);
+      stage.camera.lookAt(0, 0.7, 0);
+      stage.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      stage.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      stage.renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+
+      const ambient = new THREE.AmbientLight(0x8bbcff, 1.2);
+      const key = new THREE.PointLight(0x35d8ff, 42, 26);
+      key.position.set(0, 5, 4);
+      const gold = new THREE.PointLight(0xffcf4d, 18, 16);
+      gold.position.set(-3, 2.6, 2);
+      stage.scene.add(ambient, key, gold);
+
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(16, 10, 18, 12),
+        new THREE.MeshStandardMaterial({ color: 0x0b1723, roughness: 0.72, metalness: 0.18 })
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -0.55;
+      stage.scene.add(floor);
+
+      const coreGeo = new THREE.IcosahedronGeometry(1.25, 3);
+      const coreMat = new THREE.MeshStandardMaterial({ color: 0x35d8ff, emissive: 0x0e7f9b, roughness: 0.2, metalness: 0.45 });
+      stage.core = new THREE.Mesh(coreGeo, coreMat);
+      stage.core.position.set(0, 1.35, -1.15);
+      stage.scene.add(stage.core);
+
+      const roomGeo = new THREE.BoxGeometry(1.05, 1.75, 1.05);
+      const colors = [0xff5548, 0xffcf4d, 0x35d8ff, 0x46e676, 0xad76ff];
+      const xs = [-5.2, -2.6, 0, 2.6, 5.2];
+      xs.forEach((x, idx) => {
+        const mat = new THREE.MeshStandardMaterial({ color: colors[idx], emissive: colors[idx], emissiveIntensity: 0.18, roughness: 0.28, metalness: 0.5 });
+        const mesh = new THREE.Mesh(roomGeo, mat);
+        mesh.position.set(x, 0.35, 0.6 + Math.sin(idx) * 0.45);
+        stage.scene.add(mesh);
+        stage.roomMeshes.push(mesh);
+      });
+
+      stage.playerGroup = new THREE.Group();
+      stage.scene.add(stage.playerGroup);
+
+      addEventListener("resize", () => {
+        if (!stage.renderer) return;
+        stage.camera.aspect = wrap.clientWidth / wrap.clientHeight;
+        stage.camera.updateProjectionMatrix();
+        stage.renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      });
+
+      stage.ready = true;
+      animateStage();
+    }
+
+    function updateStage(s) {
+      if (!stage.ready) return;
+      const maxRoom = Math.max(0, ...s.players.map((p) => p.escaped ? s.rooms.length : p.room));
+      stage.roomMeshes.forEach((mesh, idx) => {
+        mesh.scale.y = idx <= maxRoom ? 1.2 : 1;
+        mesh.material.emissiveIntensity = idx <= maxRoom ? 0.45 : 0.12;
+      });
+      stage.playerGroup.clear();
+      s.players.slice(0, 30).forEach((p, i) => {
+        const room = p.escaped ? 4 : p.room;
+        const x = -5.2 + room * 2.6 + ((i % 5) - 2) * 0.18;
+        const z = 2.15 + Math.floor(i / 5) * 0.22;
+        const orb = new THREE.Mesh(
+          new THREE.SphereGeometry(0.13, 18, 18),
+          new THREE.MeshStandardMaterial({ color: p.escaped ? 0x46e676 : 0xffcf4d, emissive: p.escaped ? 0x1a8f38 : 0x8c6500, roughness: 0.2, metalness: 0.35 })
+        );
+        orb.position.set(x, 0.55, z);
+        stage.playerGroup.add(orb);
+      });
+    }
+
+    function animateStage() {
+      if (!stage.ready) return;
+      requestAnimationFrame(animateStage);
+      const t = performance.now() / 1000;
+      stage.core.rotation.x += 0.006;
+      stage.core.rotation.y += 0.01;
+      stage.core.position.y = 1.35 + Math.sin(t * 1.8) * 0.08;
+      stage.roomMeshes.forEach((mesh, idx) => {
+        mesh.rotation.y = Math.sin(t * 0.7 + idx) * 0.12;
+      });
+      stage.renderer.render(stage.scene, stage.camera);
     }
 
     function toast(text) {
       const el = document.getElementById("toast");
       el.textContent = text;
       el.style.display = "block";
-      if (window.gsap) gsap.fromTo(el, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.15 });
-      setTimeout(() => {
-        if (window.gsap) gsap.to(el, { y: 18, opacity: 0, duration: 0.18, onComplete: () => el.style.display = "none" });
-        else el.style.display = "none";
-      }, 1100);
+      setTimeout(() => el.style.display = "none", 1500);
     }
   </script>
 </body>

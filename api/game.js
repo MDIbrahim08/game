@@ -2,8 +2,7 @@ const { snapshot, route } = require("../game-core");
 
 module.exports = async function handler(req, res) {
   const protocol = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers.host;
-  const joinUrl = `${protocol}://${host}/?player=1`;
+  const joinUrl = `${protocol}://${req.headers.host}/?player=1`;
 
   if (req.method === "GET") {
     res.status(200).json(snapshot(joinUrl));

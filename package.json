@@ -1,8 +1,8 @@
 {
-  "name": "securecraft-diamond-patch-quest",
+  "name": "codesecure-escape-room",
   "version": "1.0.0",
   "private": true,
-  "description": "Live QR multiplayer presentation game for CodeSecure.",
+  "description": "Individual live cybersecurity escape room for CodeSecure presentation.",
   "scripts": {
     "start": "node server.js"
   }
