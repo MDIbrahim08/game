@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05090d">
+  <title>The Commit Impostor | CodeSecure</title>
+  <script defer src="/assets/qrcode.min.js"></script>
+  <script defer src="/assets/lucide.min.js"></script>
+  <style>
+    :root {
+      --ink: #eaf4f7;
+      --muted: #8ea3ac;
+      --line: rgba(121, 202, 224, .28);
+      --line-strong: rgba(91, 228, 255, .72);
+      --cyan: #43def5;
+      --green: #56e0a0;
+      --yellow: #ffca57;
+      --red: #ff5872;
+      --bg: #05090d;
+      --panel: rgba(4, 14, 21, .88);
+      --world: url("/assets/server-room.jpg");
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; background: var(--bg); }
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+    .hidden { display: none !important; }
+    .app-shell { min-height: 100vh; overflow: hidden; position: relative; background: #05090d; }
+    .app-shell::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image: var(--world);
+      background-position: center;
+      background-size: cover;
+      filter: brightness(.23) saturate(.85);
+      transform: scale(1.03);
+    }
+    .app-shell::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: rgba(2, 8, 13, .65);
+      pointer-events: none;
+    }
+    .host-screen, .player-screen { position: relative; z-index: 1; min-height: 100vh; }
+    .icon { width: 17px; height: 17px; stroke-width: 1.9; }
+    .brand { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 800; letter-spacing: 0; }
+    .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--cyan); color: var(--cyan); background: rgba(0, 30, 40, .72); }
+    .brand small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 1.3px; }
+    .topbar { height: 74px; padding: 0 28px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: rgba(3, 11, 17, .86); backdrop-filter: blur(15px); }
+    .topbar-actions { display: flex; align-items: center; gap: 9px; }
+    .status-chip { min-height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; border: 1px solid var(--line); color: #c2d6dc; font-size: 11px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; background: rgba(4, 15, 23, .66); }
+    .status-chip strong { color: var(--cyan); font-variant-numeric: tabular-nums; }
+    .status-chip.danger { border-color: rgba(255, 88, 114, .72); color: #ffdce2; }
+    .status-chip.danger strong { color: var(--red); }
+    .status-chip.success { border-color: rgba(86, 224, 160, .63); color: #d9ffeb; }
+    .status-chip.success strong { color: var(--green); }
+    .tool-button, .command-button, .vote-button, .zone-button, .sab-button, .target-button { border: 1px solid var(--line); color: var(--ink); background: rgba(5, 19, 28, .85); cursor: pointer; transition: transform .16s ease, border-color .16s ease, background .16s ease; }
+    .tool-button:hover, .command-button:hover, .vote-button:hover, .zone-button:hover, .sab-button:hover, .target-button:hover { border-color: var(--line-strong); transform: translateY(-1px); background: rgba(7, 31, 43, .95); }
+    .tool-button:disabled, .command-button:disabled, .vote-button:disabled, .zone-button:disabled, .sab-button:disabled, .target-button:disabled { cursor: not-allowed; opacity: .42; transform: none; }
+    .tool-button { width: 36px; height: 36px; display: inline-grid; place-items: center; }
+    .command-button { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 9px 15px; color: #07151a; border-color: var(--cyan); background: var(--cyan); font-size: 12px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase; }
+    .command-button:hover { color: #07151a; background: #8bedfa; }
+    .command-button.secondary { color: var(--ink); background: rgba(7, 22, 31, .9); border-color: var(--line); }
+    .command-button.danger { color: white; background: rgba(126, 22, 42, .88); border-color: var(--red); }
+    .command-button.green { color: #021910; background: var(--green); border-color: var(--green); }
+    .host-grid { min-height: calc(100vh - 74px); display: grid; grid-template-columns: minmax(0, 1fr) 338px; }
+    .stage-wrap { min-height: 0; position: relative; padding: 20px; border-right: 1px solid var(--line); }
+    .stage-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 0 0 16px; }
+    .eyebrow { margin: 0 0 5px; color: var(--cyan); font-size: 10px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; }
+    h1, h2, h3, p { margin: 0; }
+    .stage-head h1 { font-size: clamp(20px, 2vw, 29px); letter-spacing: 0; }
+    .stage-head h1 span { color: var(--muted); font-weight: 500; }
+    .facility {
+      position: relative;
+      min-height: 620px;
+      height: calc(100vh - 146px);
+      overflow: hidden;
+      isolation: isolate;
+      border: 1px solid rgba(120, 211, 236, .4);
+      background: #071119 var(--world) center / cover no-repeat;
+      box-shadow: inset 0 0 80px rgba(0, 0, 0, .75), 0 25px 55px rgba(0, 0, 0, .32);
+    }
+    .facility::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 13, 20, .52);
+      z-index: 0;
+    }
+    .facility::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 22px solid rgba(0, 0, 0, .28);
+      pointer-events: none;
+      z-index: 5;
+    }
+    .scan-lines { position: absolute; inset: 0; z-index: 1; opacity: .28; pointer-events: none; background-image: repeating-linear-gradient(0deg, transparent 0, transparent 5px, rgba(83, 234, 255, .06) 6px); }
+    .world-meta { position: absolute; z-index: 6; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; pointer-events: none; }
+    .world-meta .caption { color: rgba(225, 249, 255, .88); font-size: 10px; font-weight: 900; letter-spacing: 1.35px; text-shadow: 0 2px 8px #000; }
+    .critical-banner { position: absolute; z-index: 7; left: 50%; top: 18px; transform: translateX(-50%); min-width: 320px; padding: 10px 16px; border: 1px solid var(--red); color: #fff; background: rgba(112, 7, 28, .93); text-align: center; font-size: 12px; font-weight: 900; letter-spacing: 1px; animation: pulse-alert .85s ease-in-out infinite alternate; }
+    @keyframes pulse-alert { to { box-shadow: 0 0 35px rgba(255, 61, 97, .72); } }
+    .zone-anchor { position: absolute; z-index: 3; width: 172px; transform: translate(-50%, -50%); text-align: center; }
+    .zone-anchor::before, .zone-anchor::after { content: ""; position: absolute; background: rgba(100, 227, 250, .4); }
+    .zone-anchor::before { width: 1px; height: 25px; left: 50%; top: -22px; }
+    .zone-anchor::after { height: 1px; width: 44px; left: 50%; top: -22px; }
+    .zone-label { display: inline-block; min-width: 126px; padding: 7px 10px; border: 1px solid rgba(131, 228, 248, .66); color: #eafdff; background: rgba(2, 16, 24, .81); font-size: 10px; font-weight: 900; letter-spacing: 1.15px; text-shadow: 0 1px 4px #000; }
+    .zone-label em { display: block; margin-top: 3px; color: #93adba; font-size: 8px; font-style: normal; font-weight: 700; letter-spacing: .75px; }
+    .zone-anchor.incident .zone-label { border-color: var(--red); color: #ffe8ee; box-shadow: 0 0 26px rgba(255, 88, 114, .45); }
+    .agent-marker { position: absolute; z-index: 4; width: 58px; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+    .agent-marker .agent-icon { width: 28px; height: 36px; display: inline-grid; place-items: center; color: var(--accent); border: 1px solid var(--accent); background: rgba(3, 14, 20, .94); box-shadow: 0 0 17px color-mix(in srgb, var(--accent) 38%, transparent); clip-path: polygon(50% 0, 100% 20%, 100% 80%, 50% 100%, 0 80%, 0 20%); }
+    .agent-marker .agent-icon svg { width: 18px; }
+    .agent-marker .agent-name { display: block; max-width: 82px; overflow: hidden; margin: 4px auto 0; color: #f5fdff; font-size: 8px; font-weight: 900; letter-spacing: .4px; text-overflow: ellipsis; text-shadow: 0 2px 5px #000; white-space: nowrap; }
+    .agent-marker.offline { filter: grayscale(1); opacity: .54; }
+    .agent-marker.offline .agent-icon { color: var(--red); border-color: var(--red); transform: rotate(90deg); }
+    .telemetry-panel { position: absolute; z-index: 6; bottom: 18px; left: 18px; max-width: 460px; padding: 13px 14px; border-left: 3px solid var(--cyan); background: rgba(3, 14, 21, .88); box-shadow: 0 10px 35px rgba(0, 0, 0, .35); }
+    .telemetry-panel .telemetry-title { color: var(--cyan); font-size: 10px; font-weight: 900; letter-spacing: 1.1px; text-transform: uppercase; }
+    .telemetry-panel p { margin-top: 5px; color: #e3f0f3; font-size: 12px; line-height: 1.45; }
+    .telemetry-panel b { color: var(--yellow); font-size: 10px; letter-spacing: .75px; }
+    .host-side { overflow-y: auto; padding: 18px; background: rgba(3, 11, 17, .92); }
+    .side-section { padding: 0 0 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .side-section:last-child { border-bottom: 0; }
+    .side-label { margin-bottom: 10px; color: #93aab2; font-size: 10px; font-weight: 900; letter-spacing: 1.25px; text-transform: uppercase; }
+    .room-code { color: var(--cyan); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 24px; font-weight: 900; letter-spacing: 2px; }
+    .join-row { display: flex; align-items: center; gap: 13px; }
+    .qr { width: 112px; height: 112px; display: grid; place-items: center; overflow: hidden; padding: 5px; background: #fff; }
+    .qr img, .qr canvas { max-width: 100%; max-height: 100%; }
+    .join-copy { min-width: 0; }
+    .join-copy p { color: #d8e6e9; font-size: 13px; font-weight: 750; line-height: 1.35; }
+    .join-copy code { display: block; max-width: 170px; overflow: hidden; margin-top: 7px; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .host-controls { display: grid; grid-template-columns: 1fr 44px; gap: 8px; }
+    .host-controls .command-button { grid-column: 1 / -1; }
+    .meter { height: 10px; overflow: hidden; border: 1px solid var(--line); background: rgba(0,0,0,.4); }
+    .meter > span { display: block; height: 100%; background: var(--cyan); box-shadow: 0 0 17px rgba(67, 222, 245, .62); transition: width .35s ease; }
+    .meter.red > span { background: var(--red); box-shadow: 0 0 17px rgba(255, 88, 114, .62); }
+    .meter-copy { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 7px; color: #b7c8cf; font-size: 10px; font-weight: 850; letter-spacing: .5px; }
+    .agent-list, .feed-list, .roster-list { display: grid; gap: 7px; }
+    .agent-row, .feed-row, .roster-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; padding: 8px 9px; border-left: 2px solid var(--line); background: rgba(8, 23, 31, .58); }
+    .agent-row .agent-name, .roster-row .agent-name { min-width: 0; overflow: hidden; color: #e2f4f6; font-size: 11px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+    .agent-row small, .roster-row small, .feed-row small { color: var(--muted); font-size: 9px; font-weight: 700; }
+    .feed-row { align-items: flex-start; }
+    .feed-row p { color: #cad9dd; font-size: 10px; line-height: 1.38; }
+    .feed-row.critical { border-color: var(--red); }
+    .feed-row.secure { border-color: var(--green); }
+    .feed-row.meeting { border-color: var(--yellow); }
+    .feed-row.warning { border-color: var(--yellow); }
+    .empty { color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    .join-screen { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+    .join-panel { width: min(520px, 100%); position: relative; overflow: hidden; padding: clamp(28px, 6vw, 56px); border: 1px solid rgba(117, 223, 244, .46); background: rgba(2, 12, 18, .84); box-shadow: 0 24px 70px rgba(0, 0, 0, .55); }
+    .join-panel::before { content: ""; position: absolute; width: 85%; height: 1px; top: 0; left: 0; background: var(--cyan); box-shadow: 0 0 22px var(--cyan); }
+    .join-panel h1 { margin-top: 22px; font-size: clamp(30px, 8vw, 47px); line-height: .98; }
+    .join-panel h1 span { display: block; color: var(--cyan); }
+    .join-panel > p { max-width: 360px; margin-top: 16px; color: #adc1c8; font-size: 14px; line-height: 1.6; }
+    .join-form { display: grid; gap: 10px; margin-top: 27px; }
+    .text-input { width: 100%; min-height: 51px; padding: 0 15px; border: 1px solid var(--line); color: #f5fcff; background: rgba(8, 25, 33, .9); }
+    .text-input::placeholder { color: #6d858e; }
+    .join-form .command-button { width: 100%; min-height: 51px; }
+    .join-meta { display: flex; justify-content: space-between; gap: 10px; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--line); color: #879ca4; font-size: 10px; font-weight: 750; letter-spacing: .75px; text-transform: uppercase; }
+    .player-screen { padding-bottom: 28px; }
+    .player-topbar { min-height: 66px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); background: rgba(3, 11, 17, .92); }
+    .player-topbar .brand { font-size: 13px; }
+    .player-topbar .brand small { display: none; }
+    .player-main { width: min(760px, 100%); margin: 0 auto; padding: 18px; }
+    .role-reveal { padding: 22px; border: 1px solid var(--line); background: rgba(3, 15, 22, .86); box-shadow: 0 18px 52px rgba(0,0,0,.36); }
+    .role-reveal .role-line { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+    .role-reveal h1 { font-size: 28px; }
+    .role-reveal h1.crew { color: var(--green); }
+    .role-reveal h1.impostor { color: var(--red); }
+    .role-reveal p { margin-top: 7px; color: #b8ccd2; font-size: 13px; line-height: 1.55; }
+    .role-kicker { color: var(--cyan); font-size: 10px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase; }
+    .player-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 9px; }
+    .player-stat { min-height: 74px; padding: 12px; border: 1px solid var(--line); background: rgba(2, 12, 18, .76); }
+    .player-stat small { display: block; color: #91aab3; font-size: 9px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+    .player-stat strong { display: block; margin-top: 6px; color: #f6fdff; font-size: 20px; font-variant-numeric: tabular-nums; }
+    .mission-panel { margin-top: 10px; border: 1px solid var(--line); background: rgba(3, 14, 21, .88); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px; border-bottom: 1px solid var(--line); }
+    .panel-head h2 { font-size: 13px; letter-spacing: .2px; }
+    .panel-head small { color: var(--muted); font-size: 9px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+    .mission-body { padding: 14px; }
+    .mission-name { color: #f1fbfd; font-size: 18px; font-weight: 850; }
+    .mission-zone { margin-top: 5px; color: var(--cyan); font-size: 10px; font-weight: 900; letter-spacing: 1.1px; text-transform: uppercase; }
+    .mission-body .command-button { width: 100%; margin-top: 14px; }
+    .zone-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 10px; }
+    .zone-button { position: relative; min-height: 68px; padding: 11px; text-align: left; }
+    .zone-button.active { border-color: var(--cyan); box-shadow: inset 3px 0 0 var(--cyan); }
+    .zone-button.incident { border-color: var(--red); box-shadow: inset 3px 0 0 var(--red); }
+    .zone-button strong { display: block; color: #e6f7fa; font-size: 12px; }
+    .zone-button small { display: block; margin-top: 5px; color: #8da8b1; font-size: 9px; font-weight: 750; letter-spacing: .65px; }
+    .zone-button i { position: absolute; top: 12px; right: 10px; color: var(--cyan); }
+    .tactical-map { position: relative; height: 270px; margin-top: 10px; overflow: hidden; border: 1px solid var(--line); background: #071119 var(--world) center / cover no-repeat; }
+    .tactical-map::before { content: ""; position: absolute; inset: 0; background: rgba(2, 13, 20, .58); }
+    .tactical-map .zone-anchor { transform: translate(-50%, -50%) scale(.63); transform-origin: center; }
+    .tactical-map .agent-marker { transform: translate(-50%, -50%) scale(.7); transform-origin: center; }
+    .tactical-map .zone-anchor::before, .tactical-map .zone-anchor::after { display: none; }
+    .sabotage-action { padding: 15px; border: 1px solid rgba(255, 88, 114, .66); background: rgba(63, 8, 20, .72); }
+    .sabotage-action h2 { color: #fff0f3; font-size: 16px; }
+    .sabotage-action p { margin-top: 6px; color: #ffc9d2; font-size: 12px; line-height: 1.45; }
+    .sabotage-action .command-button { width: 100%; margin-top: 12px; }
+    .sab-grid, .target-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+    .sab-button, .target-button { min-height: 76px; padding: 11px; text-align: left; }
+    .sab-button strong, .target-button strong { display: block; color: #f4fafc; font-size: 11px; }
+    .sab-button small, .target-button small { display: block; margin-top: 6px; color: #8da7af; font-size: 9px; line-height: 1.3; }
+    .sab-button { border-color: rgba(255, 88, 114, .46); }
+    .target-button { border-color: rgba(255, 202, 87, .45); }
+    .crew-alert { padding: 14px; border: 1px solid var(--red); background: rgba(91, 8, 25, .74); }
+    .crew-alert h2 { color: #fff3f5; font-size: 15px; }
+    .crew-alert p { margin-top: 5px; color: #ffd2da; font-size: 12px; }
+    .crew-alert .command-button { width: 100%; margin-top: 11px; }
+    .observer { padding: 24px; border: 1px solid rgba(255, 88, 114, .5); background: rgba(20, 4, 8, .8); text-align: center; }
+    .observer h1 { color: var(--red); font-size: 25px; }
+    .observer p { margin-top: 9px; color: #e8b7c1; font-size: 13px; line-height: 1.5; }
+    .lobby-player { padding: 38px 20px; border: 1px solid var(--line); background: rgba(2, 12, 18, .85); text-align: center; }
+    .lobby-player h1 { font-size: 27px; }
+    .lobby-player p { margin-top: 10px; color: #adbec4; font-size: 13px; }
+    .meeting-overlay, .challenge-overlay { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .75); backdrop-filter: blur(8px); }
+    .meeting-box, .challenge-box { width: min(640px, 100%); max-height: min(780px, 94vh); overflow: auto; border: 1px solid var(--yellow); background: #081219; box-shadow: 0 24px 90px rgba(0,0,0,.75); }
+    .meeting-box header, .challenge-box header { padding: 20px; border-bottom: 1px solid rgba(255, 202, 87, .38); background: rgba(58, 39, 5, .55); }
+    .meeting-box h1, .challenge-box h1 { color: #fff5d8; font-size: clamp(23px, 6vw, 34px); }
+    .meeting-box p, .challenge-box p { margin-top: 7px; color: #d8ccb0; font-size: 12px; line-height: 1.5; }
+    .meeting-body, .challenge-body { padding: 16px; }
+    .clue { margin-bottom: 13px; padding: 12px; border-left: 3px solid var(--cyan); background: rgba(6, 27, 35, .72); }
+    .clue small { color: var(--cyan); font-size: 9px; font-weight: 900; letter-spacing: 1.15px; text-transform: uppercase; }
+    .clue p { margin-top: 5px; color: #ddf3f7; }
+    .vote-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .vote-button { min-height: 65px; padding: 11px; text-align: left; }
+    .vote-button strong { display: block; color: #ecf9fc; font-size: 12px; }
+    .vote-button small { display: block; margin-top: 5px; color: #91aab2; font-size: 9px; }
+    .vote-button.skip { grid-column: 1 / -1; color: #f7e8bd; border-color: rgba(255, 202, 87, .62); text-align: center; }
+    .meeting-timer { color: var(--yellow); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 18px; font-weight: 900; letter-spacing: 1px; }
+    .signal-board { position: relative; height: 280px; overflow: hidden; border: 1px solid var(--line); background: rgba(2, 15, 22, .85); }
+    .signal-board::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(62, 227, 247, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(62, 227, 247, .07) 1px, transparent 1px); background-size: 27px 27px; }
+    .signal-node { position: absolute; width: 51px; height: 51px; display: grid; place-items: center; border: 1px solid var(--cyan); color: var(--cyan); background: rgba(0, 32, 42, .88); cursor: pointer; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 900; box-shadow: 0 0 16px rgba(67,222,245,.26); }
+    .signal-node:hover { background: rgba(14, 77, 91, .95); }
+    .signal-node.done { color: #052419; border-color: var(--green); background: var(--green); box-shadow: 0 0 20px rgba(86,224,160,.63); }
+    .challenge-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0 0; color: #a9c2c9; font-size: 11px; font-weight: 800; letter-spacing: .7px; }
+    .challenge-status strong { color: var(--cyan); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 15px; }
+    .end-screen { padding: 30px 18px; }
+    .end-card { width: min(720px, 100%); margin: 0 auto; padding: clamp(24px, 6vw, 54px); border: 1px solid var(--line); background: rgba(3, 13, 20, .9); text-align: center; box-shadow: 0 24px 75px rgba(0,0,0,.5); }
+    .end-card h1 { font-size: clamp(28px, 7vw, 55px); }
+    .end-card h1.crew { color: var(--green); }
+    .end-card h1.impostor { color: var(--red); }
+    .end-card p { max-width: 520px; margin: 14px auto 0; color: #c3d5da; font-size: 14px; line-height: 1.55; }
+    .final-roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 25px; text-align: left; }
+    .final-roster .roster-row { min-height: 54px; }
+    .role-tag { padding: 3px 6px; border: 1px solid var(--line); color: var(--muted); font-size: 8px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase; }
+    .role-tag.impostor { border-color: var(--red); color: var(--red); }
+    .role-tag.crew { border-color: var(--green); color: var(--green); }
+    .toast { position: fixed; z-index: 40; left: 50%; bottom: 26px; transform: translateX(-50%); max-width: min(480px, calc(100% - 32px)); padding: 12px 16px; border: 1px solid var(--line-strong); color: #ecfeff; background: rgba(2, 18, 25, .95); box-shadow: 0 14px 35px rgba(0,0,0,.45); font-size: 12px; font-weight: 750; text-align: center; }
+
+    @media (max-width: 980px) {
+      .host-grid { grid-template-columns: 1fr; }
+      .stage-wrap { border-right: 0; }
+      .host-side { border-top: 1px solid var(--line); }
+      .facility { height: 620px; }
+      .host-side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .side-section { border-bottom: 0; }
+    }
+    @media (max-width: 620px) {
+      .topbar { height: 62px; padding: 0 14px; }
+      .topbar .brand small { display: none; }
+      .topbar-actions .status-chip:not(.danger) { display: none; }
+      .stage-wrap { padding: 12px; }
+      .stage-head { padding-bottom: 12px; }
+      .stage-head h1 { font-size: 19px; }
+      .facility { min-height: 510px; height: 68vh; }
+      .zone-anchor { transform: translate(-50%, -50%) scale(.72); transform-origin: center; }
+      .agent-marker { transform: translate(-50%, -50%) scale(.74); transform-origin: center; }
+      .world-meta .caption:last-child { display: none; }
+      .telemetry-panel { right: 12px; left: 12px; bottom: 12px; }
+      .host-side { display: block; }
+      .side-section { border-bottom: 1px solid var(--line); }
+      .host-grid { min-height: calc(100vh - 62px); }
+      .join-row { align-items: flex-start; }
+      .qr { width: 100px; height: 100px; }
+      .host-controls { grid-template-columns: 1fr 44px; }
+      .player-main { padding: 12px; }
+      .role-reveal { padding: 18px; }
+      .player-stats { gap: 6px; }
+      .player-stat { padding: 10px; }
+      .player-stat strong { font-size: 17px; }
+      .zone-grid, .sab-grid, .target-grid, .vote-grid, .final-roster { grid-template-columns: 1fr; }
+      .vote-button.skip { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="app-shell"></div>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script>
+    (() => {
+      const app = document.getElementById('app');
+      const toast = document.getElementById('toast');
+      const params = new URLSearchParams(location.search);
+      const isHost = params.get('host') === '1';
+      const randomRoom = () => `ops-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+      let room = params.get('room') || (isHost ? randomRoom() : 'showtime');
+      if (isHost && !params.get('room')) {
+        params.set('room', room);
+        history.replaceState({}, '', `${location.pathname}?${params.toString()}`);
+      }
+      const playerStorageKey = `commit-impostor:${room}:player`;
+      let playerId = localStorage.getItem(playerStorageKey) || '';
+      let snapshot = null;
+      let toastTimer = null;
+      let lastPhase = '';
+      let lastMeetingId = '';
+      let lastSaboId = '';
+      let lastResultId = '';
+      let soundOn = true;
+      let audio = null;
+      let ambient = null;
+      let taskChallenge = null;
+
+      const zoneIcons = { atrium: 'radio-tower', gateway: 'waypoints', pipeline: 'git-branch', lab: 'flask-conical', vault: 'vault' };
+      const sabotageNames = {
+        'traffic-flood': 'Traffic Flood',
+        'build-tamper': 'Build Tamper',
+        'package-rot': 'Package Rot',
+        'key-exposure': 'Key Exposure',
+      };
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+      }
+
+      function apiUrl() {
+        return '/api/game';
+      }
+
+      async function request(method, body, query = {}) {
+        const url = new URL(apiUrl(), location.origin);
+        Object.entries(query).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+        });
+        const response = await fetch(url, {
+          method,
+          headers: body ? { 'Content-Type': 'application/json' } : undefined,
+          body: body ? JSON.stringify(body) : undefined,
+          cache: 'no-store',
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || payload.error) throw new Error(payload.error || 'Connection failed.');
+        return payload;
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.remove('hidden');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.add('hidden'), 3500);
+      }
+
+      function ensureAudio() {
+        if (!soundOn) return null;
+        if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+        if (audio.state === 'suspended') audio.resume();
+        return audio;
+      }
+
+      function tone(frequency, duration, options = {}) {
+        const context = ensureAudio();
+        if (!context) return;
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = options.type || 'sine';
+        oscillator.frequency.setValueAtTime(frequency, context.currentTime);
+        if (options.slide) oscillator.frequency.exponentialRampToValueAtTime(Math.max(25, options.slide), context.currentTime + duration);
+        gain.gain.setValueAtTime(0.0001, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(options.volume || .07, context.currentTime + .016);
+        gain.gain.exponentialRampToValueAtTime(.0001, context.currentTime + duration);
+        oscillator.connect(gain).connect(context.destination);
+        oscillator.start();
+        oscillator.stop(context.currentTime + duration + .03);
+      }
+
+      function playSound(kind) {
+        if (!soundOn) return;
+        if (kind === 'start') { tone(260, .12, { type: 'sawtooth', slide: 430, volume: .05 }); setTimeout(() => tone(620, .24, { type: 'triangle', volume: .08 }), 115); }
+        if (kind === 'move') tone(360, .05, { type: 'square', slide: 410, volume: .025 });
+        if (kind === 'task') { tone(520, .08, { type: 'triangle', volume: .045 }); setTimeout(() => tone(790, .12, { type: 'triangle', volume: .055 }), 75); }
+        if (kind === 'sabotage') { tone(140, .55, { type: 'sawtooth', slide: 72, volume: .08 }); setTimeout(() => tone(185, .18, { type: 'square', volume: .05 }), 95); }
+        if (kind === 'meeting') { tone(720, .18, { type: 'square', volume: .07 }); setTimeout(() => tone(520, .21, { type: 'square', volume: .07 }), 195); setTimeout(() => tone(720, .18, { type: 'square', volume: .07 }), 420); }
+        if (kind === 'bad') tone(110, .26, { type: 'sawtooth', slide: 58, volume: .075 });
+        if (kind === 'win') { tone(420, .12, { type: 'triangle', volume: .05 }); setTimeout(() => tone(610, .14, { type: 'triangle', volume: .06 }), 110); setTimeout(() => tone(830, .35, { type: 'triangle', volume: .08 }), 240); }
+      }
+
+      function startAmbient() {
+        const context = ensureAudio();
+        if (!context || ambient) return;
+        const gain = context.createGain();
+        gain.gain.value = .012;
+        const low = context.createOscillator();
+        const high = context.createOscillator();
+        low.type = 'sine'; low.frequency.value = 51;
+        high.type = 'triangle'; high.frequency.value = 103;
+        low.connect(gain); high.connect(gain); gain.connect(context.destination);
+        low.start(); high.start();
+        ambient = { low, high, gain };
+      }
+
+      function toggleSound() {
+        soundOn = !soundOn;
+        if (!soundOn && ambient) {
+          ambient.low.stop(); ambient.high.stop(); ambient = null;
+        }
+        if (soundOn) { ensureAudio(); startAmbient(); playSound('task'); }
+        render();
+      }
+
+      function formatTime(value) {
+        const ms = Math.max(0, Number(value || 0) - Date.now());
+        const mins = Math.floor(ms / 60000);
+        const secs = Math.floor((ms % 60000) / 1000);
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+
+      function eventClass(type) {
+        return ['critical', 'secure', 'meeting', 'warning'].includes(type) ? type : '';
+      }
+
+      function playerAtZone(player, players) {
+        const all = players.filter((item) => item.zone === player.zone);
+        const index = all.findIndex((item) => item.id === player.id);
+        const angle = (Math.PI * 2 * index) / Math.max(all.length, 1);
+        const radius = all.length > 1 ? 27 : 0;
+        return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+      }
+
+      function zoneLayer(data, interactive = false) {
+        const incident = data.sabotage?.zone;
+        return data.zones.map((zone) => `
+          <div class="zone-anchor ${incident === zone.id ? 'incident' : ''}" style="left:${zone.x}%;top:${zone.y}%">
+            <span class="zone-label">${escapeHtml(zone.short)}<em>${escapeHtml(zone.description)}</em></span>
+          </div>
+        `).join('');
+      }
+
+      function agentLayer(data) {
+        return data.players.map((player) => {
+          const zone = data.zones.find((item) => item.id === player.zone);
+          if (!zone) return '';
+          const offset = playerAtZone(player, data.players);
+          return `
+            <div class="agent-marker ${player.alive ? '' : 'offline'}" style="--accent:${escapeHtml(player.color)};left:calc(${zone.x}% + ${offset.x}px);top:calc(${zone.y}% + ${offset.y}px)">
+              <span class="agent-icon"><i data-lucide="shield"></i></span>
+              <span class="agent-name">${escapeHtml(player.name)}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function facilityMap(data, compact = false) {
+        const alert = data.sabotage ? `<div class="critical-banner">CRITICAL // ${escapeHtml(data.sabotage.title)} // ${formatTime(data.sabotage.endsAt)}</div>` : '';
+        const report = data.agentReport ? `
+          <div class="telemetry-panel">
+            <div class="telemetry-title">${escapeHtml(data.agentReport.title)} <b>${escapeHtml(data.agentReport.cwe)}</b></div>
+            <p>${escapeHtml(data.agentReport.detail)}</p>
+          </div>` : '';
+        return `
+          <div class="${compact ? 'tactical-map' : 'facility'}">
+            <div class="scan-lines"></div>
+            ${compact ? '' : `<div class="world-meta"><span class="caption">FACILITY // ARC-09 // LIVE TELEMETRY</span><span class="caption">ENCRYPTED SENSORS ONLINE</span></div>`}
+            ${alert}
+            ${zoneLayer(data)}
+            ${agentLayer(data)}
+            ${compact ? '' : report}
+          </div>`;
+      }
+
+      function renderQr(joinUrl) {
+        const container = document.getElementById('qr');
+        if (!container) return;
+        container.innerHTML = '';
+        if (window.QRCode) {
+          new window.QRCode(container, { text: joinUrl, width: 102, height: 102, colorDark: '#05090d', colorLight: '#ffffff', correctLevel: window.QRCode.CorrectLevel.M });
+        } else {
+          const image = document.createElement('img');
+          image.alt = 'Join game QR code';
+          image.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(joinUrl)}`;
+          container.appendChild(image);
+        }
+      }
+
+      function hostMarkup(data) {
+        const joinUrl = `${location.origin}${location.pathname}?room=${encodeURIComponent(room)}`;
+        const securityWidth = Math.min(100, (data.securityProgress / Math.max(data.securityGoal, 1)) * 100);
+        const failureWidth = Math.min(100, (data.sabotageFailures / 3) * 100);
+        const phaseLabel = data.phase === 'lobby' ? 'Lobby open' : data.phase === 'playing' ? 'Live round' : 'Round complete';
+        const feed = data.feed.length ? data.feed.map((item) => `<div class="feed-row ${eventClass(item.type)}"><p>${escapeHtml(item.message)}</p><small>${new Date(item.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small></div>`).join('') : '<p class="empty">No facility events yet.</p>';
+        const roster = data.players.length ? data.players.map((player) => `<div class="roster-row"><span class="agent-name">${escapeHtml(player.name)}</span><small>${player.alive ? escapeHtml(data.zones.find((zone) => zone.id === player.zone)?.short || 'ATRIUM') : 'OFFLINE'}</small></div>`).join('') : '<p class="empty">Waiting for agents to join.</p>';
+        const models = [
+          ['Nemotron 3', 'Orchestration'],
+          ['Gemini Flash', 'Triage'],
+          ['Qwen3-Omni', 'AST slicing'],
+          ['MiniCPM-o', 'Verification'],
+          ['Nano Omni', 'Sandbox'],
+        ].map(([name, role]) => `<div class="agent-row"><span class="agent-name">${name}</span><small>${role}</small></div>`).join('');
+        return `
+          <main class="host-screen">
+            <header class="topbar">
+              <div class="brand"><span class="brand-mark"><i data-lucide="shield-check" class="icon"></i></span><span>CodeSecure<small>THE COMMIT IMPOSTOR</small></span></div>
+              <div class="topbar-actions">
+                <span class="status-chip ${data.sabotage ? 'danger' : data.phase === 'ended' ? 'success' : ''}"><i data-lucide="activity" class="icon"></i><strong>${phaseLabel}</strong></span>
+                <span class="status-chip"><i data-lucide="users" class="icon"></i><strong>${data.playerCount}/20</strong></span>
+                <span class="status-chip ${data.phase === 'playing' ? 'danger' : ''}"><i data-lucide="timer" class="icon"></i><strong>${data.phase === 'playing' ? formatTime(data.endsAt) : '--:--'}</strong></span>
+              </div>
+            </header>
+            <div class="host-grid">
+              <section class="stage-wrap">
+                <div class="stage-head">
+                  <div><p class="eyebrow">Live incident simulation</p><h1>Software Factory <span>/ ARC-09</span></h1></div>
+                  ${data.lastMeetingResult ? `<span class="status-chip ${data.lastMeetingResult.role === 'impostor' ? 'success' : ''}">${escapeHtml(data.lastMeetingResult.name)} ${data.lastMeetingResult.role ? 'quarantined' : ''}</span>` : ''}
+                </div>
+                ${facilityMap(data)}
+              </section>
+              <aside class="host-side">
+                <section class="side-section">
+                  <p class="side-label">Audience access</p>
+                  <div class="join-row"><div id="qr" class="qr"></div><div class="join-copy"><div class="room-code">${escapeHtml(room)}</div><p>Scan to enter the facility.</p><code>${escapeHtml(joinUrl)}</code></div></div>
+                </section>
+                <section class="side-section">
+                  <p class="side-label">Host controls</p>
+                  <div class="host-controls">
+                    <button class="command-button ${data.phase === 'playing' ? 'secondary' : ''}" data-action="host-start" ${data.phase === 'playing' || data.playerCount < 4 ? 'disabled' : ''}><i data-lucide="play" class="icon"></i>${data.phase === 'ended' ? 'Run another round' : 'Start operation'}</button>
+                    <button class="tool-button" data-action="toggle-sound" title="${soundOn ? 'Mute sound' : 'Enable sound'}"><i data-lucide="${soundOn ? 'volume-2' : 'volume-x'}" class="icon"></i></button>
+                    <button class="command-button danger" data-action="host-reset"><i data-lucide="rotate-ccw" class="icon"></i>Clear room</button>
+                  </div>
+                  ${data.playerCount < 4 && data.phase !== 'playing' ? '<p class="empty" style="margin-top:10px">Four agents required to start.</p>' : ''}
+                </section>
+                <section class="side-section">
+                  <p class="side-label">Security progress</p>
+                  <div class="meter-copy"><span>SECURE TASKS</span><span>${data.securityProgress}/${data.securityGoal}</span></div><div class="meter"><span style="width:${securityWidth}%"></span></div>
+                  <div class="meter-copy" style="margin-top:14px"><span>CRITICAL FAILURES</span><span>${data.sabotageFailures}/3</span></div><div class="meter red"><span style="width:${failureWidth}%"></span></div>
+                </section>
+                <section class="side-section"><p class="side-label">Forensic agents</p><div class="agent-list">${models}</div></section>
+                <section class="side-section"><p class="side-label">Active roster</p><div class="roster-list">${roster}</div></section>
+                <section class="side-section"><p class="side-label">Incident feed</p><div class="feed-list">${feed}</div></section>
+              </aside>
+            </div>
+          </main>`;
+      }
+
+      function joinMarkup() {
+        return `
+          <main class="join-screen">
+            <section class="join-panel">
+              <div class="brand"><span class="brand-mark"><i data-lucide="shield-check" class="icon"></i></span><span>CodeSecure<small>LIVE SECURITY ARENA</small></span></div>
+              <p class="eyebrow">Identity link secured</p>
+              <h1>The Commit <span>Impostor</span></h1>
+              <p>Enter the software factory. Your identity remains classified until the host starts the operation.</p>
+              <form id="join-form" class="join-form"><input id="agent-name" class="text-input" maxlength="16" autocomplete="nickname" placeholder="Your operative name" required><button class="command-button" type="submit"><i data-lucide="log-in" class="icon"></i>Enter facility</button></form>
+              <div class="join-meta"><span>Room ${escapeHtml(room)}</span><span>Up to 20 agents</span></div>
+            </section>
+          </main>`;
+      }
+
+      function renderZoneButtons(data) {
+        const self = data.self;
+        return `<section class="mission-panel"><div class="panel-head"><h2>Facility movement</h2><small>${escapeHtml(data.zones.find((zone) => zone.id === self.zone)?.short || '')}</small></div><div class="zone-grid">${data.zones.map((zone) => `
+          <button class="zone-button ${self.zone === zone.id ? 'active' : ''} ${data.sabotage?.zone === zone.id ? 'incident' : ''}" data-action="move" data-zone="${zone.id}" ${self.zone === zone.id ? 'disabled' : ''}>
+            <i data-lucide="${zoneIcons[zone.id]}"></i><strong>${escapeHtml(zone.short)}</strong><small>${escapeHtml(zone.description)}</small>
+          </button>`).join('')}</div></section>`;
+      }
+
+      function crewMission(data) {
+        const self = data.self;
+        const task = self.currentTask;
+        const incidentHere = data.sabotage && data.sabotage.zone === self.zone;
+        const report = self.canReport ? `<section class="crew-alert"><h2>Compromised operative located</h2><p>Emergency review will expose a CodeSecure forensic clue.</p><button class="command-button danger" data-action="report"><i data-lucide="siren" class="icon"></i>Call emergency review</button></section>` : '';
+        const sabo = incidentHere ? `<section class="sabotage-action"><h2>${escapeHtml(data.sabotage.title)}</h2><p>${escapeHtml(data.sabotage.cwe)}. Stabilize the system before ${formatTime(data.sabotage.endsAt)}.</p><button class="command-button green" data-action="open-stabilize"><i data-lucide="shield-plus" class="icon"></i>Stabilize system</button></section>` : '';
+        if (!task) return `${report}${sabo}<section class="mission-panel"><div class="mission-body"><p class="mission-name">Assignment complete</p><p class="mission-zone">Monitor for an impostor or critical incident.</p></div></section>`;
+        const location = data.zones.find((zone) => zone.id === task.zone);
+        return `${report}${sabo}<section class="mission-panel"><div class="panel-head"><h2>Assigned task</h2><small>${self.taskCount}/${self.taskTotal}</small></div><div class="mission-body"><p class="mission-name">${escapeHtml(task.title)}</p><p class="mission-zone">${escapeHtml(location?.name || task.zone)}</p><button class="command-button" data-action="open-task" ${self.zone !== task.zone ? 'disabled' : ''}><i data-lucide="scan-line" class="icon"></i>${self.zone === task.zone ? 'Open terminal' : 'Travel to terminal'}</button></div></section>`;
+      }
+
+      function impostorMission(data) {
+        const self = data.self;
+        const nearby = data.players.filter((player) => player.alive && player.id !== self.id && player.zone === self.zone);
+        const cooldown = self.cooldowns.compromise > 0 ? `${Math.ceil(self.cooldowns.compromise / 1000)}s cooldown` : 'Exploit ready';
+        const sabotageCooldown = self.cooldowns.sabotage > 0 ? `${Math.ceil(self.cooldowns.sabotage / 1000)}s cooldown` : 'Uplink ready';
+        return `
+          <section class="mission-panel"><div class="panel-head"><h2>Sabotage uplink</h2><small>${escapeHtml(sabotageCooldown)}</small></div><div class="mission-body"><p class="mission-name">Create a critical incident</p><div class="sab-grid">${Object.entries(sabotageNames).map(([id, title]) => `<button class="sab-button" data-action="sabotage" data-sabotage="${id}" ${data.sabotage || self.cooldowns.sabotage > 0 ? 'disabled' : ''}><strong>${escapeHtml(title)}</strong><small>Trigger CodeSecure response</small></button>`).join('')}</div></div></section>
+          <section class="mission-panel"><div class="panel-head"><h2>Exploit channel</h2><small>${escapeHtml(cooldown)}</small></div><div class="mission-body"><p class="mission-name">Compromise nearby agent</p><div class="target-grid">${nearby.length ? nearby.map((player) => `<button class="target-button" data-action="compromise" data-target="${player.id}" ${self.cooldowns.compromise > 0 ? 'disabled' : ''}><strong>${escapeHtml(player.name)}</strong><small>${escapeHtml(data.zones.find((zone) => zone.id === player.zone)?.short || '')}</small></button>`).join('') : '<p class="empty">No operatives in this sector.</p>'}</div></div></section>`;
+      }
+
+      function playerPlayingMarkup(data) {
+        const self = data.self;
+        if (!self.alive) return `<section class="observer"><p class="eyebrow">Connection quarantined</p><h1>OPERATIVE OFFLINE</h1><p>Watch the facility. Your role will be revealed when the operation ends.</p></section>${facilityMap(data, true)}`;
+        const roleName = self.role === 'impostor' ? 'IMPOSTOR' : 'CODESECURE CREW';
+        const roleMessage = self.role === 'impostor' ? 'Stay hidden. Break production before the crew completes security protocol.' : 'Complete security tasks, stabilize incidents, and expose the impostors.';
+        return `
+          <section class="role-reveal"><div class="role-line"><div><p class="role-kicker">Classified identity</p><h1 class="${self.role}">${roleName}</h1><p>${roleMessage}</p></div><span class="status-chip ${self.role === 'impostor' ? 'danger' : 'success'}">${self.alive ? 'ACTIVE' : 'OFFLINE'}</span></div></section>
+          <div class="player-stats"><div class="player-stat"><small>Operation</small><strong>${formatTime(data.endsAt)}</strong></div><div class="player-stat"><small>Security</small><strong>${data.securityProgress}/${data.securityGoal}</strong></div><div class="player-stat"><small>${self.role === 'crew' ? 'Your tasks' : 'Sabotages'}</small><strong>${self.role === 'crew' ? `${self.taskCount}/${self.taskTotal}` : self.sabotages}</strong></div></div>
+          ${self.role === 'crew' ? crewMission(data) : impostorMission(data)}
+          ${renderZoneButtons(data)}
+          ${facilityMap(data, true)}`;
+      }
+
+      function playerMarkup(data) {
+        if (!data || !data.self) return joinMarkup();
+        let content = '';
+        if (data.phase === 'lobby') content = `<section class="lobby-player"><p class="eyebrow">Identity verified</p><h1>You are inside the facility.</h1><p>Wait for the host to start the operation.</p><div class="player-stats"><div class="player-stat"><small>Room</small><strong>${escapeHtml(room)}</strong></div><div class="player-stat"><small>Agents</small><strong>${data.playerCount}/20</strong></div><div class="player-stat"><small>Status</small><strong>READY</strong></div></div></section>`;
+        else if (data.phase === 'ended') content = endMarkup(data);
+        else content = playerPlayingMarkup(data);
+        return `
+          <main class="player-screen"><header class="player-topbar"><div class="brand"><span class="brand-mark"><i data-lucide="shield-check" class="icon"></i></span><span>CodeSecure<small>THE COMMIT IMPOSTOR</small></span></div><div class="topbar-actions"><span class="status-chip"><strong>${escapeHtml(data.self.name)}</strong></span><button class="tool-button" data-action="toggle-sound" title="${soundOn ? 'Mute sound' : 'Enable sound'}"><i data-lucide="${soundOn ? 'volume-2' : 'volume-x'}" class="icon"></i></button></div></header><div class="player-main">${content}</div>${data.meeting ? meetingMarkup(data) : ''}</main>`;
+      }
+
+      function meetingMarkup(data) {
+        const self = data.self;
+        const choices = data.players.filter((player) => player.alive && player.id !== self.id).map((player) => `<button class="vote-button" data-action="vote" data-target="${player.id}" ${self.hasVoted || !self.alive ? 'disabled' : ''}><strong>${escapeHtml(player.name)}</strong><small>${escapeHtml(data.zones.find((zone) => zone.id === player.zone)?.short || '')}</small></button>`).join('');
+        const clue = data.agentReport ? `${data.agentReport.cwe}: ${data.agentReport.detail}` : 'CodeSecure is reconstructing the incident path.';
+        return `<section class="meeting-overlay"><div class="meeting-box"><header><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><p class="eyebrow" style="color:var(--yellow)">Emergency review</p><h1>WHO IS THE IMPOSTOR?</h1><p>Quarantine one suspect or skip. Your vote cannot be changed.</p></div><span class="meeting-timer">${formatTime(data.meeting.endsAt)}</span></div></header><div class="meeting-body"><div class="clue"><small>CodeSecure forensic evidence</small><p>${escapeHtml(clue)}</p></div><div class="vote-grid">${choices}<button class="vote-button skip" data-action="vote" data-target="skip" ${self.hasVoted || !self.alive ? 'disabled' : ''}>Skip quarantine</button></div>${self.hasVoted ? '<p class="empty" style="margin-top:12px;text-align:center">Vote locked. Awaiting review result.</p>' : ''}</div></div></section>`;
+      }
+
+      function endMarkup(data) {
+        const win = data.winner || { side: 'crew', reason: 'The facility closed.' };
+        const heading = win.side === 'crew' ? 'BREACH CONTAINED' : 'PRODUCTION BREACHED';
+        const roster = data.players.slice().sort((a, b) => b.score - a.score).map((player) => `<div class="roster-row"><span class="agent-name">${escapeHtml(player.name)}</span><span class="role-tag ${player.role}">${player.role === 'impostor' ? 'Impostor' : 'Crew'}</span></div>`).join('');
+        return `<section class="end-screen"><div class="end-card"><p class="eyebrow">Operation complete</p><h1 class="${win.side}">${heading}</h1><p>${escapeHtml(win.reason)}</p><div class="final-roster">${roster}</div></div></section>`;
+      }
+
+      function renderChallenge() {
+        if (!taskChallenge) return;
+        const nodes = taskChallenge.positions.map((position, index) => `<button class="signal-node ${index < taskChallenge.step ? 'done' : ''}" data-action="signal-node" data-node="${index}" style="left:${position.x}%;top:${position.y}%">${index < taskChallenge.step ? '<i data-lucide="check"></i>' : index + 1}</button>`).join('');
+        const overlay = document.createElement('section');
+        overlay.id = 'challenge-overlay';
+        overlay.className = 'challenge-overlay';
+        overlay.innerHTML = `<div class="challenge-box"><header><p class="eyebrow">Secure terminal handshake</p><h1>${escapeHtml(taskChallenge.title)}</h1><p>Lock each signal relay in sequence before the trace window closes.</p></header><div class="challenge-body"><div class="signal-board">${nodes}</div><div class="challenge-status"><span>RELAY ${taskChallenge.step}/${taskChallenge.positions.length}</span><strong>${String(taskChallenge.step).padStart(2, '0')}/${String(taskChallenge.positions.length).padStart(2, '0')}</strong></div></div></div>`;
+        document.body.appendChild(overlay);
+      }
+
+      function render() {
+        const existingChallenge = document.getElementById('challenge-overlay');
+        if (existingChallenge) existingChallenge.remove();
+        if (isHost) app.innerHTML = hostMarkup(snapshot || { phase: 'lobby', playerCount: 0, players: [], zones: [], feed: [], securityProgress: 0, securityGoal: 8, sabotageFailures: 0 });
+        else app.innerHTML = playerMarkup(snapshot);
+        if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.8 } });
+        if (isHost && snapshot) setTimeout(() => renderQr(`${location.origin}${location.pathname}?room=${encodeURIComponent(room)}`), 0);
+        if (taskChallenge) renderChallenge();
+        bindActions();
+      }
+
+      function trackEvents(next) {
+        if (!next) return;
+        if (next.phase !== lastPhase && next.phase === 'playing') playSound('start');
+        if (next.sabotage?.id && next.sabotage.id !== lastSaboId) playSound('sabotage');
+        if (next.meeting?.id && next.meeting.id !== lastMeetingId) playSound('meeting');
+        if (next.lastMeetingResult?.id && next.lastMeetingResult.id !== lastResultId) playSound(next.lastMeetingResult.role === 'impostor' ? 'task' : 'bad');
+        if (next.phase === 'ended' && lastPhase !== 'ended') playSound('win');
+        lastPhase = next.phase;
+        lastSaboId = next.sabotage?.id || '';
+        lastMeetingId = next.meeting?.id || '';
+        lastResultId = next.lastMeetingResult?.id || '';
+      }
+
+      async function refresh() {
+        try {
+          const data = await request('GET', null, { room, player: isHost ? undefined : playerId, host: isHost ? '1' : undefined });
+          snapshot = data;
+          trackEvents(data);
+          render();
+        } catch (error) {
+          if (snapshot) showToast(error.message);
+        }
+      }
+
+      async function doAction(action, extra = {}) {
+        try {
+          ensureAudio(); startAmbient();
+          const result = await request('POST', { room, action, playerId, ...extra });
+          if (result.playerId) {
+            playerId = result.playerId;
+            localStorage.setItem(playerStorageKey, playerId);
+          }
+          snapshot = result.snapshot || snapshot;
+          trackEvents(snapshot);
+          render();
+          return true;
+        } catch (error) {
+          playSound('bad');
+          showToast(error.message);
+          return false;
+        }
+      }
+
+      function openChallenge(kind) {
+        taskChallenge = {
+          kind,
+          title: kind === 'stabilize' ? 'Stabilize critical system' : 'Complete security task',
+          step: 0,
+          positions: shufflePositions(),
+        };
+        playSound('move');
+        render();
+      }
+
+      function shufflePositions() {
+        const slots = [{x:12,y:18},{x:43,y:10},{x:74,y:20},{x:19,y:64},{x:51,y:51},{x:78,y:67}];
+        return slots.sort(() => Math.random() - .5);
+      }
+
+      async function handleSignalNode(index) {
+        if (!taskChallenge) return;
+        if (index !== taskChallenge.step) {
+          taskChallenge.step = 0;
+          playSound('bad');
+          render();
+          showToast('Signal chain reset. Start again.');
+          return;
+        }
+        taskChallenge.step += 1;
+        playSound('task');
+        if (taskChallenge.step < taskChallenge.positions.length) { render(); return; }
+        const kind = taskChallenge.kind;
+        taskChallenge = null;
+        const success = await doAction(kind === 'stabilize' ? 'stabilize' : 'task');
+        if (success) playSound('task');
+      }
+
+      function bindActions() {
+        document.querySelectorAll('[data-action]').forEach((element) => {
+          element.addEventListener('click', async (event) => {
+            const action = element.dataset.action;
+            if (action === 'toggle-sound') return toggleSound();
+            if (action === 'host-start') return doAction('host-start');
+            if (action === 'host-reset') {
+              if (confirm('Clear this room and remove every player?')) return doAction('host-reset');
+              return;
+            }
+            if (action === 'move') { const done = await doAction('move', { zone: element.dataset.zone }); if (done) playSound('move'); return; }
+            if (action === 'open-task') return openChallenge('task');
+            if (action === 'open-stabilize') return openChallenge('stabilize');
+            if (action === 'sabotage') return doAction('sabotage', { sabotageId: element.dataset.sabotage });
+            if (action === 'compromise') return doAction('compromise', { targetId: element.dataset.target });
+            if (action === 'report') return doAction('report');
+            if (action === 'vote') return doAction('vote', { targetId: element.dataset.target });
+            if (action === 'signal-node') return handleSignalNode(Number(element.dataset.node));
+          });
+        });
+        const joinForm = document.getElementById('join-form');
+        if (joinForm) joinForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const name = document.getElementById('agent-name').value;
+          if (!name.trim()) return showToast('Enter an operative name.');
+          await doAction('join', { name });
+        });
+      }
+
+      render();
+      refresh();
+      setInterval(refresh, 950);
+    })();
+  </script>
+</body>
+</html>
