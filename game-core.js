@@ -1,154 +1,263 @@
 const crypto = require("crypto");
 
-const teams = [
-  { id: "redstone", name: "Redstone", color: "#ff4d3d", score: 0, artifacts: [] },
-  { id: "diamond", name: "Diamond", color: "#32d6ff", score: 0, artifacts: [] },
-  { id: "emerald", name: "Emerald", color: "#42e66f", score: 0, artifacts: [] },
-  { id: "nether", name: "Nether", color: "#b06cff", score: 0, artifacts: [] }
-];
+const ROUND_MS = 150000;
+const LANES = ["Gateway", "Config", "Webhook", "Vault"];
 
-const missions = [
+const THREAT_TYPES = [
   {
-    id: "login-cave",
-    title: "Redstone Login Cave",
-    artifact: "Redstone Key",
-    biome: "Cave Gate",
-    bugCrafter: "I built the login gate fast. Surely string concat is fine.",
-    code: "const q = \"SELECT * FROM users WHERE id = \" + input;\ndb.query(q);",
+    id: "sqli",
+    name: "SQL Injection",
     cwe: "CWE-89",
-    vulnerability: "SQL Injection",
-    patch: "Use parameterized queries",
-    agent: "Scanner + Patch",
-    correct: { vuln: 0, patch: 1, agent: 0 },
-    questions: {
-      vuln: ["SQL Injection", "Hardcoded Secret", "Unsafe Deserialization", "XSS"],
-      patch: ["Escape by replacing spaces", "Use parameterized queries", "Hide the query in Base64", "Disable the login route"],
-      agent: ["Scanner + Patch", "Visual Judge only", "Speech Agent", "Backup Agent"]
-    }
+    lane: 0,
+    hp: 130,
+    impact: 95,
+    reward: 170,
+    color: "#ff4d3d",
+    code: "\"SELECT * FROM users WHERE id = \" + input",
+    secure: "Parameterized query"
   },
   {
-    id: "potion-forest",
-    title: "Potion Config Forest",
-    artifact: "Potion Shield",
-    biome: "Config Grove",
-    bugCrafter: "My potion loader accepts any uploaded recipe. Very flexible.",
-    code: "import yaml\nconfig = yaml.load(user_file)\napply_config(config)",
+    id: "deser",
+    name: "Unsafe Loader",
     cwe: "CWE-502",
-    vulnerability: "Unsafe Deserialization",
-    patch: "Use safe_load and strict schema validation",
-    agent: "CWE + Patch",
-    correct: { vuln: 2, patch: 0, agent: 1 },
-    questions: {
-      vuln: ["CSRF", "Open Redirect", "Unsafe Deserialization", "Path Traversal"],
-      patch: ["Use safe_load and strict schema validation", "Rename the YAML file", "Compress the upload", "Allow only admins to upload huge files"],
-      agent: ["Visual Judge only", "CWE + Patch", "Speech Agent", "Formatter Agent"]
-    }
+    lane: 1,
+    hp: 155,
+    impact: 110,
+    reward: 190,
+    color: "#ffcf4d",
+    code: "yaml.load(user_file)",
+    secure: "safe_load + schema"
   },
   {
-    id: "nether-bridge",
-    title: "Nether Webhook Bridge",
-    artifact: "Nether Compass",
-    biome: "Portal Bridge",
-    bugCrafter: "The webhook fetches any URL. What could a portal possibly leak?",
-    code: "app.post('/webhook/test', async (req, res) => {\n  const r = await fetch(req.body.url);\n  res.send(await r.text());\n});",
+    id: "ssrf",
+    name: "SSRF Portal",
     cwe: "CWE-918",
-    vulnerability: "Server-Side Request Forgery",
-    patch: "Allowlist domains and block private/internal IP ranges",
-    agent: "Scanner + Judge",
-    correct: { vuln: 1, patch: 2, agent: 2 },
-    questions: {
-      vuln: ["Race Condition", "Server-Side Request Forgery", "Weak Hashing", "Clickjacking"],
-      patch: ["Add a loading spinner", "Only use HTTPS text", "Allowlist domains and block private/internal IP ranges", "Retry the request three times"],
-      agent: ["Patch only", "Visual Judge only", "Scanner + Judge", "Formatter Agent"]
-    }
+    lane: 2,
+    hp: 170,
+    impact: 125,
+    reward: 220,
+    color: "#b06cff",
+    code: "fetch(req.body.url)",
+    secure: "allowlist + block private IPs"
   },
   {
-    id: "diamond-vault",
-    title: "Diamond Vault Mountain",
-    artifact: "Diamond Map",
-    biome: "Vault Peak",
-    bugCrafter: "I left one tiny key in code. Nobody reads repositories, right?",
-    code: "const STRIPE_SECRET = \"sk_live_minecraft_7x91\";\nchargePlayer(STRIPE_SECRET, cart);",
+    id: "secret",
+    name: "Secret Leak",
     cwe: "CWE-798",
-    vulnerability: "Hardcoded Secret",
-    patch: "Move secrets to environment variables or a secret manager",
-    agent: "RAG + Judge",
-    correct: { vuln: 3, patch: 1, agent: 3 },
-    questions: {
-      vuln: ["Insecure Randomness", "Memory Leak", "SQL Injection", "Hardcoded Secret"],
-      patch: ["Convert the secret to uppercase", "Move secrets to environment variables or a secret manager", "Commit the key in a private branch", "Screenshot the key for backup"],
-      agent: ["Formatter Agent", "Visual Judge only", "Scanner only", "RAG + Judge"]
-    }
+    lane: 3,
+    hp: 145,
+    impact: 105,
+    reward: 185,
+    color: "#32d6ff",
+    code: "const API_KEY = \"sk_live_...\"",
+    secure: "secret manager"
   },
   {
-    id: "final-chest",
-    title: "The Diamond Patch Chest",
-    artifact: "Diamond Patch",
-    biome: "Server Core",
-    bugCrafter: "Fine. Protect the whole server if you can.",
-    code: "AI generated a login API, webhook tester, config loader,\nand payment module in one pull request.\nChoose the full CodeSecure pipeline.",
-    cwe: "SYSTEM",
-    vulnerability: "Multi-risk AI-generated code",
-    patch: "Scanner -> CWE -> RAG -> Patch -> Judge",
-    agent: "Full CodeSecure Pipeline",
-    correct: { vuln: 0, patch: 0, agent: 0 },
-    questions: {
-      vuln: ["Multi-risk AI-generated code", "Only a UI bug", "Only a database migration", "No security issue"],
-      patch: ["Scanner -> CWE -> RAG -> Patch -> Judge", "Commit first, scan next week", "Ask users not to attack", "Disable logs"],
-      agent: ["Full CodeSecure Pipeline", "Formatter Agent", "Only the UI Agent", "No agent needed"]
-    }
+    id: "zero-day",
+    name: "BugCrafter Core",
+    cwe: "MULTI",
+    lane: 2,
+    hp: 360,
+    impact: 230,
+    reward: 520,
+    color: "#42e66f",
+    code: "AI pull request contains login + webhook + config risks",
+    secure: "Scanner -> CWE -> RAG -> Patch -> Judge"
   }
 ];
 
+const TEAM_BLUEPRINTS = [
+  { id: "redstone", name: "Redstone", color: "#ff4d3d" },
+  { id: "diamond", name: "Diamond", color: "#32d6ff" },
+  { id: "emerald", name: "Emerald", color: "#42e66f" },
+  { id: "nether", name: "Nether", color: "#b06cff" }
+];
+
+function freshTeams() {
+  return TEAM_BLUEPRINTS.map((team) => ({
+    ...team,
+    score: 0,
+    energy: 0,
+    agents: 0,
+    actions: 0
+  }));
+}
+
 const state = globalThis.__securecraftState || {
   phase: "lobby",
-  roomCode: "PATCH",
-  currentMission: 0,
-  roundStartedAt: null,
-  locked: false,
-  mamBonusGiven: false,
+  roomCode: "RAID",
   players: {},
-  teams,
-  missions,
-  feed: [{ type: "system", text: "Lobby opened. Scan QR to join the Diamond Patch Quest." }],
-  answers: []
+  teams: freshTeams(),
+  threats: [],
+  defeated: [],
+  feed: [{ type: "system", text: "Lobby open. Players can join the CodeSecure Core Raid." }],
+  startedAt: null,
+  lastTick: Date.now(),
+  nextSpawnAt: 0,
+  coreHp: 1000,
+  maxCoreHp: 1000,
+  shield: 0,
+  combo: 1,
+  winner: null
 };
 
 globalThis.__securecraftState = state;
 
-function snapshot(joinUrl) {
-  return {
-    ...state,
-    players: Object.values(state.players),
-    joinUrl
-  };
+function nowLabel() {
+  return new Date().toLocaleTimeString();
 }
 
 function pushFeed(text, type = "system") {
-  state.feed.unshift({ type, text, time: new Date().toLocaleTimeString() });
-  state.feed = state.feed.slice(0, 9);
+  state.feed.unshift({ type, text, time: nowLabel() });
+  state.feed = state.feed.slice(0, 10);
 }
 
 function teamById(id) {
   return state.teams.find((team) => team.id === id) || state.teams[0];
 }
 
-function playerAnswerScore(mission, answer) {
-  let gained = 0;
-  const parts = [];
-  if (Number(answer.vuln) === mission.correct.vuln) {
-    gained += 100;
-    parts.push("vulnerability");
+function playerList() {
+  return Object.values(state.players);
+}
+
+function elapsed(now = Date.now()) {
+  return state.startedAt ? Math.max(0, now - state.startedAt) : 0;
+}
+
+function spawnThreat(now) {
+  const t = elapsed(now);
+  let type;
+  if (t > ROUND_MS - 30000 && !state.threats.some((x) => x.type === "zero-day") && !state.defeated.some((x) => x.type === "zero-day")) {
+    type = THREAT_TYPES.find((item) => item.id === "zero-day");
+  } else {
+    const pool = THREAT_TYPES.filter((item) => item.id !== "zero-day");
+    type = pool[Math.floor((t / 7000 + state.threats.length) % pool.length)];
   }
-  if (Number(answer.patch) === mission.correct.patch) {
-    gained += 150;
-    parts.push("patch");
+
+  const scale = 1 + Math.min(0.8, t / ROUND_MS);
+  const threat = {
+    id: crypto.randomUUID(),
+    type: type.id,
+    name: type.name,
+    cwe: type.cwe,
+    lane: type.lane,
+    hp: Math.round(type.hp * scale),
+    maxHp: Math.round(type.hp * scale),
+    impact: Math.round(type.impact * scale),
+    reward: Math.round(type.reward * scale),
+    color: type.color,
+    code: type.code,
+    secure: type.secure,
+    spawnAt: now,
+    reachAt: now + (type.id === "zero-day" ? 28000 : 23000 - Math.min(5500, t / 18)),
+    scanned: false
+  };
+
+  state.threats.push(threat);
+  pushFeed(`${threat.name} entered ${LANES[threat.lane]} lane.`, "warning");
+}
+
+function applyCoreDamage(amount) {
+  const blocked = Math.min(state.shield, amount);
+  state.shield -= blocked;
+  const damage = amount - blocked;
+  state.coreHp = Math.max(0, state.coreHp - damage);
+  if (damage > 0) pushFeed(`Server core took ${damage} damage.`, "danger");
+  if (blocked > 0) pushFeed(`CodeSecure firewall blocked ${blocked} damage.`, "success");
+}
+
+function defeatThreat(threat, team, actorName, source) {
+  state.threats = state.threats.filter((item) => item.id !== threat.id);
+  state.defeated.push({ type: threat.type, name: threat.name, team: team.id, at: Date.now() });
+  state.defeated = state.defeated.slice(-20);
+  const points = Math.round(threat.reward * state.combo);
+  team.score += points;
+  team.energy = Math.min(100, team.energy + 24);
+  team.actions += 1;
+  state.combo = Math.min(5, state.combo + 0.15);
+  pushFeed(`${actorName} neutralized ${threat.name} with ${source}. +${points}`, "success");
+}
+
+function runAgentBursts() {
+  for (const team of state.teams) {
+    if (team.energy < 100 || state.threats.length === 0) continue;
+    team.energy = 0;
+    team.agents += 1;
+    const damage = 78 + team.agents * 8;
+    for (const threat of state.threats) {
+      threat.hp -= damage;
+      threat.scanned = true;
+    }
+    team.score += 180;
+    state.shield = Math.min(420, state.shield + 70);
+    pushFeed(`Team ${team.name} triggered CodeSecure Agent Burst.`, "power");
   }
-  if (Number(answer.agent) === mission.correct.agent) {
-    gained += 100;
-    parts.push("agent");
+}
+
+function advance(now = Date.now()) {
+  if (state.phase !== "running") return;
+
+  if (state.startedAt && now - state.startedAt >= ROUND_MS) {
+    state.phase = "ended";
+    state.winner = [...state.teams].sort((a, b) => b.score - a.score)[0] || null;
+    pushFeed(`Raid complete. Team ${state.winner ? state.winner.name : "CodeSecure"} leads the defense.`, "success");
+    return;
   }
-  return { gained, parts };
+
+  if (now >= state.nextSpawnAt) {
+    spawnThreat(now);
+    const pressure = Math.max(3600, 7400 - elapsed(now) / 45);
+    state.nextSpawnAt = now + pressure;
+  }
+
+  for (const threat of [...state.threats]) {
+    if (threat.hp <= 0) {
+      const team = [...state.teams].sort((a, b) => b.energy - a.energy)[0] || state.teams[0];
+      defeatThreat(threat, team, "CodeSecure", "auto-patch");
+      continue;
+    }
+    if (now >= threat.reachAt) {
+      state.threats = state.threats.filter((item) => item.id !== threat.id);
+      applyCoreDamage(threat.impact);
+      state.combo = 1;
+    }
+  }
+
+  runAgentBursts();
+
+  if (state.coreHp <= 0) {
+    state.phase = "ended";
+    state.winner = [...state.teams].sort((a, b) => b.score - a.score)[0] || null;
+    pushFeed("Server core collapsed. Check the scoreboard for the best defenders.", "danger");
+  }
+}
+
+function snapshot(joinUrl) {
+  advance();
+  const now = Date.now();
+  return {
+    phase: state.phase,
+    roomCode: state.roomCode,
+    players: playerList(),
+    teams: state.teams,
+    threats: state.threats.map((threat) => ({
+      ...threat,
+      progress: Math.max(0, Math.min(1, (now - threat.spawnAt) / (threat.reachAt - threat.spawnAt)))
+    })),
+    defeated: state.defeated,
+    feed: state.feed,
+    coreHp: state.coreHp,
+    maxCoreHp: state.maxCoreHp,
+    shield: state.shield,
+    combo: state.combo,
+    startedAt: state.startedAt,
+    durationMs: ROUND_MS,
+    elapsedMs: elapsed(now),
+    lanes: LANES,
+    threatTypes: THREAT_TYPES,
+    winner: state.winner,
+    joinUrl
+  };
 }
 
 function join(body) {
@@ -156,123 +265,133 @@ function join(body) {
   const team = teamById(body.team);
   state.players[id] = {
     id,
-    name: String(body.name || "Miner").slice(0, 18),
+    name: String(body.name || "Operator").slice(0, 18),
     team: team.id,
     score: 0,
-    correct: 0,
-    streak: 0,
-    powerups: { compass: 1, shield: 1, scroll: 1 },
-    lastAnswer: null
+    actions: 0,
+    lastActionAt: {},
+    joinedAt: Date.now()
   };
   pushFeed(`${state.players[id].name} joined Team ${team.name}.`, "join");
-  return { playerId: id };
+  return { ok: true, playerId: id };
 }
 
-function answer(body) {
+function action(body) {
+  advance();
   const player = state.players[body.playerId];
-  const mission = state.missions[state.currentMission];
-  if (!player || state.phase !== "mission" || state.locked) return { ok: false };
+  if (!player || state.phase !== "running") return { ok: false, message: "Raid is not running." };
 
-  const alreadyAnswered = state.answers.some((a) => a.playerId === player.id && a.missionId === mission.id);
-  if (alreadyAnswered) return { ok: true, duplicate: true };
-
-  const result = playerAnswerScore(mission, body);
-  const elapsed = state.roundStartedAt ? Date.now() - state.roundStartedAt : 0;
-  const speedBonus = result.gained === 350 && elapsed < 15000 ? 50 : 0;
-  const comboBonus = result.gained === 350 ? 200 : 0;
-  const penalty = result.gained === 0 && player.powerups.shield <= 0 ? -50 : 0;
-  const shieldSaved = result.gained === 0 && player.powerups.shield > 0;
-  if (shieldSaved) player.powerups.shield -= 1;
-  const total = result.gained + speedBonus + comboBonus + penalty;
-
-  player.score += total;
-  player.correct += result.gained === 350 ? 1 : 0;
-  player.streak = result.gained === 350 ? player.streak + 1 : 0;
-  player.lastAnswer = { mission: mission.id, total, parts: result.parts, shieldSaved };
+  const kind = String(body.kind || "");
+  const cooldowns = { scan: 900, patch: 1600, shield: 2600, overclock: 3200 };
+  const last = player.lastActionAt[kind] || 0;
+  const now = Date.now();
+  if (now - last < (cooldowns[kind] || 1000)) {
+    return { ok: false, message: "Action cooling down." };
+  }
+  player.lastActionAt[kind] = now;
+  player.actions += 1;
 
   const team = teamById(player.team);
-  team.score += total;
-  if (result.gained === 350 && !team.artifacts.includes(mission.artifact)) {
-    team.artifacts.push(mission.artifact);
-  }
+  const target = [...state.threats].sort((a, b) => b.progress - a.progress)[0];
+  let score = 0;
+  let message = "";
 
-  state.answers.push({
-    playerId: player.id,
-    playerName: player.name,
-    team: player.team,
-    missionId: mission.id,
-    total,
-    elapsed,
-    fullClear: result.gained === 350
-  });
-
-  pushFeed(`${player.name} scored ${total} on ${mission.title}.`, result.gained === 350 ? "success" : "warning");
-  return { ok: true, total, shieldSaved };
-}
-
-function powerup(body) {
-  const player = state.players[body.playerId];
-  if (!player || !player.powerups[body.type]) return { ok: false };
-  player.powerups[body.type] -= 1;
-  pushFeed(`${player.name} used ${String(body.type).toUpperCase()} power-up.`, "power");
-  return { ok: true };
-}
-
-function host(action, body = {}) {
-  if (action === "start") {
-    state.phase = "mission";
-    state.currentMission = 0;
-    state.roundStartedAt = Date.now();
-    state.locked = false;
-    state.answers = [];
-    pushFeed("Quest started. BugCrafter entered the Redstone Login Cave.", "system");
-  }
-  if (action === "next") {
-    state.currentMission = Math.min(state.currentMission + 1, state.missions.length - 1);
-    state.phase = "mission";
-    state.roundStartedAt = Date.now();
-    state.locked = false;
-    state.answers = [];
-    pushFeed(`New mission opened: ${state.missions[state.currentMission].title}.`, "system");
-  }
-  if (action === "lock") {
-    state.locked = true;
-    pushFeed("Answers locked. CodeSecure is revealing the safest path.", "system");
-  }
-  if (action === "reveal") {
-    state.phase = "reveal";
-    state.locked = true;
-    pushFeed(`${state.missions[state.currentMission].artifact} unlocked.`, "success");
-  }
-  if (action === "bonus") {
-    const team = teamById(body.team);
-    if (!state.mamBonusGiven) {
-      team.score += 300;
-      state.mamBonusGiven = true;
-      pushFeed(`Chief Security Bonus awarded to Team ${team.name}.`, "success");
+  if (kind === "scan") {
+    if (target) {
+      target.scanned = true;
+      target.hp -= 18;
     }
+    team.energy = Math.min(100, team.energy + 12);
+    score = 22;
+    message = "Scanner ping sent.";
   }
-  if (action === "reset") {
+
+  if (kind === "patch") {
+    if (target) {
+      const damage = target.scanned ? 68 : 46;
+      target.hp -= damage;
+      score = damage;
+      message = `Patch packet hit ${target.name}.`;
+      if (target.hp <= 0) defeatThreat(target, team, player.name, "manual patch");
+    } else {
+      score = 10;
+      message = "No active threat. Patch cached.";
+    }
+    team.energy = Math.min(100, team.energy + 16);
+  }
+
+  if (kind === "shield") {
+    state.shield = Math.min(420, state.shield + 46);
+    team.energy = Math.min(100, team.energy + 9);
+    score = 34;
+    message = "Firewall shield reinforced.";
+  }
+
+  if (kind === "overclock") {
+    for (const threat of state.threats) threat.hp -= 28;
+    team.energy = Math.min(100, team.energy + 22);
+    score = 55;
+    message = "Multi-agent overclock fired.";
+  }
+
+  player.score += score;
+  team.score += score;
+  team.actions += 1;
+  pushFeed(`${player.name}: ${message}`, "power");
+  advance();
+  return { ok: true, score, message };
+}
+
+function host(actionName) {
+  if (actionName === "start") {
+    state.phase = "running";
+    state.startedAt = Date.now();
+    state.lastTick = state.startedAt;
+    state.nextSpawnAt = state.startedAt + 1000;
+    state.threats = [];
+    state.defeated = [];
+    state.coreHp = state.maxCoreHp;
+    state.shield = 120;
+    state.combo = 1;
+    state.winner = null;
     for (const team of state.teams) {
       team.score = 0;
-      team.artifacts = [];
+      team.energy = 0;
+      team.agents = 0;
+      team.actions = 0;
     }
-    state.players = {};
-    state.currentMission = 0;
-    state.phase = "lobby";
-    state.locked = false;
-    state.mamBonusGiven = false;
-    state.answers = [];
-    state.feed = [{ type: "system", text: "Lobby reset. New quest ready." }];
+    for (const player of playerList()) {
+      player.score = 0;
+      player.actions = 0;
+      player.lastActionAt = {};
+    }
+    state.feed = [{ type: "system", text: "Raid started. Defend the server core." }];
+    return { ok: true };
   }
-  return { ok: true };
+
+  if (actionName === "reset") {
+    state.phase = "lobby";
+    state.players = {};
+    state.teams = freshTeams();
+    state.threats = [];
+    state.defeated = [];
+    state.startedAt = null;
+    state.nextSpawnAt = 0;
+    state.coreHp = state.maxCoreHp;
+    state.shield = 0;
+    state.combo = 1;
+    state.winner = null;
+    state.feed = [{ type: "system", text: "Lobby reset. Players can join the next Core Raid." }];
+    return { ok: true };
+  }
+
+  return { ok: false };
 }
 
-function route(action, body) {
-  if (action === "join") return join(body);
-  if (action === "answer") return answer(body);
-  if (action === "powerup") return powerup(body);
-  if (action && action.startsWith("host:")) return host(action.slice(5), body);
+function route(actionName, body = {}) {
+  if (actionName === "join") return join(body);
+  if (actionName === "action") return action(body);
+  if (actionName && actionName.startsWith("host:")) return host(actionName.slice(5));
   return { ok: false };
 }
 

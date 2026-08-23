@@ -3,608 +3,559 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SecureCraft: The Diamond Patch Quest</title>
+  <title>CodeSecure Core Raid</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=JetBrains+Mono:wght@500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=JetBrains+Mono:wght@500;800&family=Press+Start+2P&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
-      --bg: #071019;
-      --panel: rgba(12, 24, 35, 0.82);
-      --panel-strong: rgba(11, 18, 28, 0.94);
-      --line: rgba(119, 229, 255, 0.24);
-      --text: #f8fbff;
-      --muted: #9cb3c7;
+      --bg: #050a12;
+      --panel: rgba(9, 18, 31, 0.84);
+      --panel2: rgba(15, 29, 45, 0.76);
+      --line: rgba(113, 231, 255, 0.22);
+      --text: #f6fbff;
+      --muted: #92aabe;
       --cyan: #32d6ff;
-      --emerald: #42e66f;
+      --green: #42e66f;
       --gold: #ffcf4d;
       --red: #ff4d3d;
       --purple: #b06cff;
-      --stone: #172635;
-      --dirt: #7a5335;
-      --grass: #4d9b47;
+      --core: #78f7ff;
     }
 
     * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
     body {
       margin: 0;
-      min-height: 100vh;
       color: var(--text);
       font-family: Inter, system-ui, sans-serif;
       background:
-        radial-gradient(circle at 18% 8%, rgba(50, 214, 255, 0.18), transparent 32%),
-        radial-gradient(circle at 86% 12%, rgba(176, 108, 255, 0.16), transparent 30%),
-        linear-gradient(180deg, #071019 0%, #0e1c21 52%, #152314 100%);
+        radial-gradient(circle at 50% 38%, rgba(50, 214, 255, 0.2), transparent 30%),
+        radial-gradient(circle at 15% 15%, rgba(176, 108, 255, 0.18), transparent 28%),
+        linear-gradient(180deg, #050a12, #09131f 55%, #07130d);
       overflow-x: hidden;
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: auto 0 0 0;
-      height: 36px;
-      background: linear-gradient(#4d9b47 0 35%, #7a5335 35% 100%);
-      border-top: 4px solid #21391e;
-      z-index: 1;
-      pointer-events: none;
     }
 
     button, input, select { font: inherit; }
     button { cursor: pointer; }
+    h1, h2, h3, p { margin: 0; }
 
-    #fx-canvas {
+    #fx {
       position: fixed;
       inset: 0;
       z-index: 0;
       pointer-events: none;
-      opacity: 0.56;
+      opacity: 0.42;
     }
 
+    .hidden { display: none !important; }
     .app {
       position: relative;
-      z-index: 2;
+      z-index: 1;
       min-height: 100vh;
-      padding: 18px;
+      padding: 14px;
     }
 
     .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto;
       gap: 16px;
-      padding: 14px 16px;
-      border: 1px solid var(--line);
-      background: rgba(8, 17, 27, 0.78);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
-    }
-
-    .brand {
-      display: flex;
       align-items: center;
-      gap: 14px;
-      min-width: 0;
+      padding: 14px 16px;
+      background: rgba(5, 12, 22, 0.82);
+      border: 1px solid var(--line);
+      box-shadow: 0 20px 70px rgba(0,0,0,0.36);
+      backdrop-filter: blur(18px);
     }
 
-    .cube-logo {
-      width: 46px;
-      height: 46px;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,0.28), transparent 35%),
-        linear-gradient(45deg, var(--grass) 0 42%, var(--dirt) 42% 100%);
-      border: 3px solid #0b1118;
-      box-shadow: inset 4px 4px 0 rgba(255,255,255,0.18), 0 0 26px rgba(50,214,255,0.35);
+    .brand { display: flex; gap: 14px; align-items: center; min-width: 0; }
+    .logo {
+      width: 52px;
+      height: 52px;
       display: grid;
       place-items: center;
-      font-family: "Press Start 2P";
-      font-size: 18px;
+      border: 3px solid rgba(255,255,255,0.18);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.24), transparent 35%),
+        linear-gradient(45deg, #40a44d 0 45%, #7a5335 45% 100%);
+      box-shadow: 0 0 34px rgba(50,214,255,0.32), inset 4px 4px 0 rgba(255,255,255,0.12);
+      font-family: "Press Start 2P", monospace;
+      color: #fff;
     }
 
-    h1, h2, h3, p { margin: 0; }
     .eyebrow {
       color: var(--cyan);
       font-size: 11px;
-      letter-spacing: 0.14em;
       text-transform: uppercase;
+      letter-spacing: 0.14em;
       font-weight: 900;
     }
 
-    .brand h1 {
-      font-size: clamp(19px, 2.4vw, 36px);
-      line-height: 1.05;
+    h1 {
+      font-size: clamp(25px, 3vw, 46px);
+      line-height: 0.96;
       letter-spacing: 0;
     }
 
-    .pill-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
     .pill {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.06);
+      padding: 9px 11px;
+      background: rgba(255,255,255,0.065);
+      border: 1px solid rgba(255,255,255,0.12);
       color: var(--muted);
-      padding: 8px 10px;
-      font-size: 12px;
       font-weight: 900;
+      font-size: 12px;
+      font-family: "JetBrains Mono", monospace;
     }
 
     .btn {
       border: 1px solid rgba(255,255,255,0.16);
       color: var(--text);
-      background: linear-gradient(180deg, rgba(50,214,255,0.24), rgba(50,214,255,0.08));
-      padding: 11px 13px;
+      background: linear-gradient(180deg, rgba(50,214,255,0.26), rgba(50,214,255,0.08));
+      padding: 12px 14px;
       font-weight: 900;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
-      transition: transform 120ms ease, border-color 120ms ease;
+      box-shadow: 0 12px 26px rgba(0,0,0,0.24);
+      transition: transform 120ms ease, border-color 120ms ease, filter 120ms ease;
     }
     .btn:hover { transform: translateY(-1px); border-color: var(--cyan); }
-    .btn.gold { background: linear-gradient(180deg, rgba(255,207,77,0.38), rgba(255,207,77,0.1)); }
-    .btn.red { background: linear-gradient(180deg, rgba(255,77,61,0.3), rgba(255,77,61,0.1)); }
-    .btn.green { background: linear-gradient(180deg, rgba(66,230,111,0.3), rgba(66,230,111,0.1)); }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .btn:active { transform: translateY(1px); filter: brightness(0.9); }
+    .btn.red { background: linear-gradient(180deg, rgba(255,77,61,0.34), rgba(255,77,61,0.08)); }
+    .btn.green { background: linear-gradient(180deg, rgba(66,230,111,0.32), rgba(66,230,111,0.08)); }
+    .btn.gold { background: linear-gradient(180deg, rgba(255,207,77,0.34), rgba(255,207,77,0.08)); }
+    .btn.purple { background: linear-gradient(180deg, rgba(176,108,255,0.34), rgba(176,108,255,0.08)); }
 
     .host-grid {
       display: grid;
-      grid-template-columns: minmax(390px, 1.08fr) minmax(360px, 0.92fr);
-      gap: 16px;
-      margin-top: 16px;
+      grid-template-columns: 1fr 360px;
+      gap: 14px;
+      margin-top: 14px;
     }
 
     .panel {
-      border: 1px solid var(--line);
       background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.34);
       backdrop-filter: blur(16px);
-      box-shadow: 0 18px 70px rgba(0,0,0,0.28);
-      padding: 16px;
+      padding: 14px;
     }
 
-    .map-panel {
-      min-height: calc(100vh - 128px);
+    .arena {
+      min-height: calc(100vh - 126px);
       display: grid;
       grid-template-rows: auto 1fr auto;
-      gap: 14px;
-    }
-
-    .map-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      align-items: start;
-    }
-
-    .map-head h2 {
-      font-size: clamp(28px, 4vw, 58px);
-      line-height: 0.98;
-      max-width: 760px;
-    }
-
-    .qr-card {
-      width: 190px;
-      flex: 0 0 190px;
-      padding: 10px;
-      background: #f8fbff;
-      color: #071019;
-      border: 5px solid #0b1118;
-      text-align: center;
-    }
-    #qr { display: grid; place-items: center; }
-    .qr-card p {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 10px;
-      margin-top: 7px;
-      word-break: break-all;
-    }
-
-    .treasure-map {
+      gap: 12px;
       position: relative;
-      min-height: 430px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background:
-        linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25% 50%, rgba(255,255,255,0.03) 50% 75%, transparent 75%) 0 0 / 36px 36px,
-        radial-gradient(circle at 22% 34%, rgba(77,155,71,0.5), transparent 18%),
-        radial-gradient(circle at 74% 62%, rgba(122,83,53,0.54), transparent 22%),
-        linear-gradient(135deg, rgba(20,42,36,0.92), rgba(14,24,38,0.96));
       overflow: hidden;
     }
 
-    .path-line {
-      position: absolute;
-      left: 11%;
-      right: 12%;
-      top: 50%;
-      height: 8px;
-      background: linear-gradient(90deg, var(--red), var(--gold), var(--cyan), var(--emerald), var(--purple));
-      transform: rotate(-8deg);
-      opacity: 0.32;
-      box-shadow: 0 0 26px rgba(50,214,255,0.36);
-    }
-
-    .zone {
-      position: absolute;
-      width: 150px;
-      min-height: 116px;
-      padding: 12px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(7, 16, 25, 0.82);
-      box-shadow: inset 0 0 0 3px rgba(255,255,255,0.03), 0 16px 42px rgba(0,0,0,0.3);
-    }
-    .zone:nth-child(2) { left: 7%; top: 56%; }
-    .zone:nth-child(3) { left: 24%; top: 25%; }
-    .zone:nth-child(4) { left: 48%; top: 54%; }
-    .zone:nth-child(5) { left: 66%; top: 24%; }
-    .zone:nth-child(6) { right: 6%; top: 52%; }
-    .zone.active { outline: 3px solid var(--gold); box-shadow: 0 0 34px rgba(255,207,77,0.42); }
-    .zone.complete { outline: 2px solid var(--emerald); }
-    .zone.locked { filter: grayscale(0.7); opacity: 0.6; }
-    .zone-icon { font-size: 28px; margin-bottom: 10px; }
-    .zone h3 { font-size: 14px; line-height: 1.12; }
-    .zone p { color: var(--muted); font-size: 12px; margin-top: 8px; }
-
-    .mission-card {
+    .arena-hud {
       display: grid;
-      grid-template-columns: 1fr 0.8fr;
-      gap: 14px;
-    }
-
-    .code-block {
-      font-family: "JetBrains Mono", monospace;
-      white-space: pre-wrap;
-      color: #d8fff0;
-      background: #081018;
-      border: 1px solid rgba(50,214,255,0.18);
-      padding: 14px;
-      min-height: 148px;
-      font-size: clamp(13px, 1.3vw, 16px);
-      line-height: 1.45;
-    }
-
-    .intel-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 10px;
+      align-items: stretch;
     }
 
-    .intel {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
+    .meter-card {
       padding: 12px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-    .intel span {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-weight: 900;
-      margin-bottom: 6px;
+    .meter-head { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 12px; font-weight: 900; margin-bottom: 8px; }
+    .bar {
+      height: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      overflow: hidden;
     }
-    .intel strong { font-size: 16px; }
+    .fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      box-shadow: 0 0 22px currentColor;
+      transition: width 350ms ease;
+    }
+    .fill.red { background: linear-gradient(90deg, var(--red), var(--gold)); }
+    .fill.gold { background: linear-gradient(90deg, var(--gold), var(--cyan)); }
 
-    .side-stack { display: grid; gap: 16px; }
-    .scoreboard { display: grid; gap: 10px; }
-    .team-row, .player-row {
+    .battlefield {
+      position: relative;
+      min-height: 560px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 44px 44px,
+        linear-gradient(0deg, rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 44px 44px,
+        radial-gradient(circle at 50% 50%, rgba(50,214,255,0.12), transparent 28%),
+        rgba(3, 9, 17, 0.72);
+      border: 1px solid rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+
+    .lane {
+      position: absolute;
+      left: 3%;
+      right: 3%;
+      height: 22%;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .lane:nth-child(1) { top: 4%; }
+    .lane:nth-child(2) { top: 27%; }
+    .lane:nth-child(3) { top: 50%; }
+    .lane:nth-child(4) { top: 73%; }
+    .lane-label {
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      color: rgba(255,255,255,0.36);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .core {
+      position: absolute;
+      right: 7%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 148px;
+      height: 148px;
+      border: 2px solid rgba(120,247,255,0.72);
+      background:
+        radial-gradient(circle, rgba(120,247,255,0.72), rgba(50,214,255,0.16) 48%, rgba(5,10,18,0.88) 72%),
+        linear-gradient(45deg, rgba(255,255,255,0.12), transparent);
+      box-shadow: 0 0 60px rgba(50,214,255,0.48), inset 0 0 26px rgba(255,255,255,0.16);
+      display: grid;
+      place-items: center;
+      font-family: "Press Start 2P", monospace;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.6;
+      z-index: 4;
+      animation: corePulse 1.3s ease-in-out infinite alternate;
+    }
+    @keyframes corePulse {
+      from { filter: brightness(0.92); }
+      to { filter: brightness(1.2); }
+    }
+
+    .threat {
+      position: absolute;
+      width: 168px;
+      min-height: 82px;
+      padding: 10px;
+      background: rgba(10, 18, 28, 0.92);
+      border: 1px solid currentColor;
+      box-shadow: 0 0 28px currentColor, inset 0 0 0 3px rgba(255,255,255,0.035);
+      z-index: 3;
+      transition: left 900ms linear, transform 200ms ease;
+    }
+    .threat.scanned { outline: 2px solid var(--gold); }
+    .threat strong { display: block; font-size: 14px; margin-bottom: 5px; }
+    .threat small { color: var(--muted); display: block; font-family: "JetBrains Mono", monospace; }
+    .hp-mini {
+      height: 7px;
+      background: rgba(255,255,255,0.12);
+      margin-top: 8px;
+    }
+    .hp-mini span {
+      display: block;
+      height: 100%;
+      background: currentColor;
+      transition: width 300ms ease;
+    }
+
+    .join-card {
+      display: grid;
+      grid-template-columns: 156px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    .qr-box {
+      background: #fff;
+      padding: 10px;
+      border: 5px solid #071019;
+      width: 156px;
+      min-height: 156px;
+    }
+    .join-url {
+      color: var(--muted);
+      word-break: break-all;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .side-stack { display: grid; gap: 14px; align-content: start; }
+    .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .team-list, .feed, .player-list { display: grid; gap: 9px; margin-top: 10px; }
+    .row {
       display: grid;
       grid-template-columns: auto 1fr auto;
-      gap: 10px;
       align-items: center;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
+      gap: 10px;
       padding: 10px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-    .team-dot {
-      width: 14px;
-      height: 14px;
-      background: var(--cyan);
-      box-shadow: 0 0 18px currentColor;
-    }
-    .team-row strong, .player-row strong { font-size: 15px; }
-    .team-row small, .player-row small { color: var(--muted); display: block; margin-top: 3px; }
-    .score { color: var(--gold); font-weight: 900; font-family: "JetBrains Mono", monospace; }
+    .dot { width: 13px; height: 13px; background: currentColor; box-shadow: 0 0 16px currentColor; }
+    .row strong { font-size: 14px; }
+    .row small { display: block; color: var(--muted); margin-top: 3px; }
+    .score { color: var(--gold); font-family: "JetBrains Mono", monospace; font-weight: 900; }
 
     .feed {
-      display: grid;
-      gap: 8px;
       max-height: 230px;
       overflow: auto;
     }
-    .feed-item {
-      padding: 9px 10px;
-      background: rgba(255,255,255,0.05);
+    .feed div {
+      padding: 9px;
+      color: #ddecff;
+      background: rgba(255,255,255,0.045);
       border-left: 3px solid var(--cyan);
-      color: #dcefff;
-      font-size: 13px;
+      font-size: 12px;
+      line-height: 1.35;
     }
-    .feed-item.success { border-color: var(--emerald); }
-    .feed-item.warning { border-color: var(--red); }
-    .feed-item.power { border-color: var(--gold); }
-
-    .control-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
+    .feed .success { border-color: var(--green); }
+    .feed .warning, .feed .danger { border-color: var(--red); }
+    .feed .power { border-color: var(--gold); }
 
     .player-shell {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
       max-width: 620px;
       margin: 0 auto;
       padding: 14px;
-      min-height: 100vh;
       display: grid;
       align-content: start;
       gap: 12px;
     }
-
-    .join-card {
-      margin-top: 12vh;
+    .join-screen {
+      margin-top: 10vh;
       display: grid;
-      gap: 12px;
+      gap: 14px;
     }
-    .join-card h1 { font-size: 34px; line-height: 1; }
+    .join-screen h1 { font-size: 38px; }
+    label { display: grid; gap: 8px; color: var(--muted); font-weight: 900; font-size: 13px; }
     input, select {
       width: 100%;
-      color: var(--text);
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.08);
       padding: 14px;
+      color: var(--text);
+      background: rgba(255,255,255,0.075);
+      border: 1px solid var(--line);
       outline: none;
     }
-    label { display: grid; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 900; }
 
-    .player-hud {
+    .controller-grid {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
-      align-items: center;
     }
-
-    .answers {
-      display: grid;
-      gap: 12px;
-    }
-    .answer-section {
-      display: grid;
-      gap: 8px;
-    }
-    .answer-section h3 {
-      color: var(--cyan);
-      font-size: 13px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .option {
-      width: 100%;
-      text-align: left;
-      border: 1px solid rgba(255,255,255,0.12);
+    .action-btn {
+      min-height: 112px;
+      border: 1px solid rgba(255,255,255,0.14);
       color: var(--text);
-      background: rgba(255,255,255,0.06);
-      padding: 12px;
-      font-weight: 800;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      padding: 14px;
+      text-align: left;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.3);
     }
-    .option.selected {
-      border-color: var(--gold);
-      background: rgba(255,207,77,0.16);
-    }
+    .action-btn strong { display: block; font-size: 20px; margin-bottom: 8px; }
+    .action-btn span { color: var(--muted); font-size: 12px; line-height: 1.35; display: block; }
+    .action-btn.scan { border-color: rgba(50,214,255,0.38); }
+    .action-btn.patch { border-color: rgba(66,230,111,0.38); }
+    .action-btn.shield { border-color: rgba(255,207,77,0.38); }
+    .action-btn.overclock { border-color: rgba(176,108,255,0.38); }
 
-    .powerups {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-    .powerups .btn { padding: 10px 8px; font-size: 12px; }
-
-    .result-toast {
+    .toast {
       position: fixed;
       left: 50%;
-      bottom: 28px;
+      bottom: 24px;
       transform: translateX(-50%);
-      background: var(--panel-strong);
-      border: 1px solid var(--line);
-      padding: 12px 14px;
-      color: var(--text);
-      box-shadow: 0 18px 50px rgba(0,0,0,0.35);
       display: none;
-      z-index: 10;
-      width: min(92vw, 420px);
+      width: min(92vw, 440px);
+      padding: 12px;
+      z-index: 5;
+      background: rgba(5,10,18,0.94);
+      border: 1px solid var(--line);
       text-align: center;
       font-weight: 900;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
     }
 
-    .hidden { display: none !important; }
-
-    @media (max-width: 980px) {
-      .app { padding: 10px; }
-      .host-grid, .mission-card { grid-template-columns: 1fr; }
-      .map-head { flex-direction: column; }
-      .qr-card { width: 100%; flex-basis: auto; }
-      .treasure-map { min-height: 560px; }
-      .zone { width: 42%; }
-      .zone:nth-child(2) { left: 5%; top: 12%; }
-      .zone:nth-child(3) { left: 53%; top: 22%; }
-      .zone:nth-child(4) { left: 5%; top: 43%; }
-      .zone:nth-child(5) { left: 53%; top: 53%; }
-      .zone:nth-child(6) { left: 28%; top: 76%; right: auto; }
-      .topbar { align-items: start; flex-direction: column; }
+    @media (max-width: 1020px) {
+      .topbar, .host-grid, .arena-hud, .join-card { grid-template-columns: 1fr; }
+      .status-row { justify-content: flex-start; }
+      .battlefield { min-height: 480px; }
+      .core { width: 112px; height: 112px; right: 4%; font-size: 10px; }
+      .threat { width: 132px; min-height: 72px; }
+      .side-stack { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <canvas id="fx-canvas"></canvas>
+  <canvas id="fx"></canvas>
+
   <div id="host-app" class="app hidden">
     <header class="topbar">
       <div class="brand">
-        <div class="cube-logo">◆</div>
+        <div class="logo">CS</div>
         <div>
-          <div class="eyebrow">CodeSecure Live Arena</div>
-          <h1>SecureCraft: The Diamond Patch Quest</h1>
+          <div class="eyebrow">Live multiplayer defense arena</div>
+          <h1>CodeSecure Core Raid</h1>
         </div>
       </div>
-      <div class="pill-row">
+      <div class="status-row">
         <div class="pill" id="phase-pill">LOBBY</div>
-        <div class="pill" id="players-pill">0 MINERS</div>
-        <div class="pill">ROOM: PATCH</div>
+        <div class="pill" id="timer-pill">02:30</div>
+        <div class="pill" id="players-pill">0 OPS</div>
+        <div class="pill">ROOM RAID</div>
       </div>
     </header>
 
     <main class="host-grid">
-      <section class="panel map-panel">
-        <div class="map-head">
+      <section class="panel arena">
+        <div class="arena-hud">
+          <div class="meter-card">
+            <div class="meter-head"><span>Server Core</span><span id="core-label">1000 / 1000</span></div>
+            <div class="bar"><div class="fill red" id="core-fill"></div></div>
+          </div>
+          <div class="meter-card">
+            <div class="meter-head"><span>CodeSecure Firewall</span><span id="shield-label">0</span></div>
+            <div class="bar"><div class="fill gold" id="shield-fill"></div></div>
+          </div>
+          <div class="meter-card">
+            <div class="meter-head"><span>Combo Multiplier</span><span id="combo-label">x1.0</span></div>
+            <div class="bar"><div class="fill" id="combo-fill"></div></div>
+          </div>
+        </div>
+
+        <div class="battlefield" id="battlefield">
+          <div class="lane"><span class="lane-label">Gateway Lane</span></div>
+          <div class="lane"><span class="lane-label">Config Lane</span></div>
+          <div class="lane"><span class="lane-label">Webhook Lane</span></div>
+          <div class="lane"><span class="lane-label">Vault Lane</span></div>
+          <div class="core" id="core-box">SERVER<br>CORE</div>
+        </div>
+
+        <div class="join-card">
+          <div class="qr-box" id="qr"></div>
           <div>
-            <div class="eyebrow">Treasure Map</div>
-            <h2 id="host-title">Scan QR to join the quest</h2>
-          </div>
-          <div class="qr-card">
-            <div id="qr"></div>
-            <p id="join-url">Starting...</p>
-          </div>
-        </div>
-
-        <div class="treasure-map" id="map">
-          <div class="path-line"></div>
-          <article class="zone" data-zone="0"><div class="zone-icon">▣</div><h3>Login Cave</h3><p>Redstone Key</p></article>
-          <article class="zone" data-zone="1"><div class="zone-icon">✦</div><h3>Potion Forest</h3><p>Potion Shield</p></article>
-          <article class="zone" data-zone="2"><div class="zone-icon">◈</div><h3>Nether Bridge</h3><p>Nether Compass</p></article>
-          <article class="zone" data-zone="3"><div class="zone-icon">◆</div><h3>Vault Mountain</h3><p>Diamond Map</p></article>
-          <article class="zone" data-zone="4"><div class="zone-icon">◇</div><h3>Final Chest</h3><p>Diamond Patch</p></article>
-        </div>
-
-        <div class="mission-card">
-          <pre class="code-block" id="host-code">Waiting for Security Miners...</pre>
-          <div class="intel-grid">
-            <div class="intel"><span>CWE</span><strong id="intel-cwe">Locked</strong></div>
-            <div class="intel"><span>Vulnerability</span><strong id="intel-vuln">Hidden</strong></div>
-            <div class="intel"><span>Secure Patch</span><strong id="intel-patch">Hidden</strong></div>
-            <div class="intel"><span>CodeSecure Agent</span><strong id="intel-agent">Hidden</strong></div>
+            <div class="eyebrow">Audience join</div>
+            <h2>Scan QR, choose team, use phone as controller.</h2>
+            <p class="join-url" id="join-url">Loading...</p>
           </div>
         </div>
       </section>
 
       <aside class="side-stack">
         <section class="panel">
-          <div class="eyebrow">Host Controls</div>
-          <div class="control-grid" style="margin-top:12px">
-            <button class="btn green" onclick="hostAction('start')">Start Quest</button>
-            <button class="btn gold" onclick="hostAction('lock')">Lock Answers</button>
-            <button class="btn" onclick="hostAction('reveal')">Reveal Patch</button>
-            <button class="btn" onclick="hostAction('next')">Next Mission</button>
-            <button class="btn gold" onclick="awardMamBonus()">Mam Bonus</button>
+          <div class="eyebrow">Host Access</div>
+          <div class="control-grid" style="margin-top:10px">
+            <button class="btn green" onclick="hostAction('start')">Start Raid</button>
             <button class="btn red" onclick="hostAction('reset')">Reset Lobby</button>
           </div>
+          <p style="color:var(--muted);font-size:12px;line-height:1.45;margin-top:10px">After Start, waves, scoring, CodeSecure bursts, and ending run automatically.</p>
         </section>
 
         <section class="panel">
-          <div class="eyebrow">Team Scoreboard</div>
-          <div class="scoreboard" id="team-scoreboard" style="margin-top:12px"></div>
+          <div class="eyebrow">Team Defense Score</div>
+          <div class="team-list" id="team-list"></div>
         </section>
 
         <section class="panel">
-          <div class="eyebrow">Top Security Miners</div>
-          <div class="scoreboard" id="player-scoreboard" style="margin-top:12px"></div>
+          <div class="eyebrow">Top Operators</div>
+          <div class="player-list" id="player-list"></div>
         </section>
 
         <section class="panel">
-          <div class="eyebrow">Live Event Feed</div>
-          <div class="feed" id="feed" style="margin-top:12px"></div>
+          <div class="eyebrow">Threat Intel</div>
+          <div class="feed" id="feed"></div>
         </section>
       </aside>
     </main>
   </div>
 
   <div id="player-app" class="player-shell hidden">
-    <section id="join-screen" class="panel join-card">
-      <div class="cube-logo">◆</div>
+    <section id="join-screen" class="panel join-screen">
+      <div class="logo">CS</div>
       <div>
-        <div class="eyebrow">Join the live quest</div>
-        <h1>Diamond Patch Quest</h1>
+        <div class="eyebrow">Phone controller</div>
+        <h1>Join Core Raid</h1>
       </div>
       <label>
-        Miner name
-        <input id="name-input" maxlength="18" placeholder="Enter your name" />
+        Operator name
+        <input id="name-input" maxlength="18" placeholder="Your name">
       </label>
       <label>
-        Choose team
+        Team
         <select id="team-input">
-          <option value="redstone">Redstone Team</option>
-          <option value="diamond">Diamond Team</option>
-          <option value="emerald">Emerald Team</option>
-          <option value="nether">Nether Team</option>
+          <option value="redstone">Redstone</option>
+          <option value="diamond">Diamond</option>
+          <option value="emerald">Emerald</option>
+          <option value="nether">Nether</option>
         </select>
       </label>
-      <button class="btn green" onclick="joinGame()">Join Quest</button>
+      <button class="btn green" onclick="joinGame()">Enter Raid Lobby</button>
     </section>
 
     <section id="play-screen" class="hidden">
-      <div class="player-hud">
-        <div>
-          <div class="eyebrow" id="player-team">Security Miner</div>
-          <h2 id="player-name">Player</h2>
-        </div>
-        <div class="pill score" id="player-score">0</div>
-      </div>
-
-      <div class="panel" style="display:grid; gap:12px; margin-top:12px">
-        <div>
-          <div class="eyebrow" id="mission-eyebrow">Waiting</div>
-          <h2 id="player-mission">Quest not started</h2>
-        </div>
-        <p id="bug-line" style="color:var(--gold); font-weight:900"></p>
-        <pre class="code-block" id="player-code">Watch the TV. The host will start the quest.</pre>
-      </div>
-
-      <div class="panel" style="margin-top:12px">
-        <div class="eyebrow">Power-ups</div>
-        <div class="powerups" style="margin-top:10px">
-          <button class="btn gold" onclick="usePower('compass')">Compass</button>
-          <button class="btn" onclick="usePower('scroll')">RAG Scroll</button>
-          <button class="btn green" onclick="usePower('shield')">Shield</button>
+      <div class="panel">
+        <div class="eyebrow" id="player-team">Operator</div>
+        <h2 id="player-name">Player</h2>
+        <div class="status-row" style="justify-content:flex-start;margin-top:10px">
+          <div class="pill score" id="player-score">0</div>
+          <div class="pill" id="player-phase">LOBBY</div>
         </div>
       </div>
 
-      <form class="panel answers" id="answer-form" onsubmit="submitAnswer(event)" style="margin-top:12px">
-        <div class="answer-section">
-          <h3>1. Vulnerability</h3>
-          <div id="vuln-options"></div>
-        </div>
-        <div class="answer-section">
-          <h3>2. Secure Patch</h3>
-          <div id="patch-options"></div>
-        </div>
-        <div class="answer-section">
-          <h3>3. CodeSecure Agent</h3>
-          <div id="agent-options"></div>
-        </div>
-        <button class="btn green" id="submit-btn" type="submit">Submit Security Patch</button>
-      </form>
+      <div class="panel">
+        <div class="meter-head"><span>Team Energy</span><span id="team-energy-label">0%</span></div>
+        <div class="bar"><div class="fill" id="team-energy-fill"></div></div>
+        <p style="color:var(--muted);font-size:12px;line-height:1.45;margin-top:10px">At 100%, CodeSecure automatically fires an Agent Burst: Scanner, CWE Classifier, RAG Retriever, Patch Agent, and Judge Agent.</p>
+      </div>
+
+      <div class="controller-grid">
+        <button class="action-btn scan" onclick="sendAction('scan')"><strong>Scan</strong><span>Mark nearest threat and build team energy fast.</span></button>
+        <button class="action-btn patch" onclick="sendAction('patch')"><strong>Patch</strong><span>Damage the closest scanned vulnerability wave.</span></button>
+        <button class="action-btn shield" onclick="sendAction('shield')"><strong>Shield</strong><span>Add firewall HP before threats reach the core.</span></button>
+        <button class="action-btn overclock" onclick="sendAction('overclock')"><strong>Overclock</strong><span>Small damage to all active threats plus energy boost.</span></button>
+      </div>
+
+      <section class="panel">
+        <div class="eyebrow">Live Target</div>
+        <p id="live-target" style="margin-top:8px;color:var(--muted);line-height:1.45">Waiting for host to start.</p>
+      </section>
     </section>
   </div>
 
-  <div class="result-toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
   <script>
     const isPlayer = new URLSearchParams(location.search).has("player");
     const hostApp = document.getElementById("host-app");
     const playerApp = document.getElementById("player-app");
     const stateRef = { current: null };
-    let playerId = localStorage.getItem("securecraft_player_id") || "";
-    let selected = { vuln: null, patch: null, agent: null };
+    let playerId = localStorage.getItem("coreraid_player_id") || "";
     let qrMade = false;
-    let lastMissionId = "";
 
     if (isPlayer) playerApp.classList.remove("hidden");
     else hostApp.classList.remove("hidden");
 
     async function refreshState() {
       try {
-        const response = await fetch("/api/game", { cache: "no-store" });
-        stateRef.current = await response.json();
-        if (isPlayer) renderPlayer();
-        else renderHost();
-      } catch (error) {
-        console.warn("State refresh failed", error);
+        const res = await fetch("/api/game", { cache: "no-store" });
+        stateRef.current = await res.json();
+        isPlayer ? renderPlayer() : renderHost();
+      } catch (err) {
+        console.warn("refresh failed", err);
       }
     }
 
+    setInterval(refreshState, 800);
     refreshState();
-    setInterval(refreshState, 1200);
 
     function post(action, body = {}) {
       return fetch(`/api/game?action=${encodeURIComponent(action)}`, {
@@ -617,63 +568,77 @@
       });
     }
 
-    function toast(text) {
-      const el = document.getElementById("toast");
-      el.textContent = text;
-      el.style.display = "block";
-      gsap.fromTo(el, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.22 });
-      setTimeout(() => {
-        gsap.to(el, { y: 20, opacity: 0, duration: 0.2, onComplete: () => el.style.display = "none" });
-      }, 2600);
+    function pct(value, max) {
+      return Math.max(0, Math.min(100, (value / max) * 100));
     }
 
-    function currentMission() {
-      const s = stateRef.current;
-      return s && s.missions[s.currentMission];
+    function formatTime(ms) {
+      const left = Math.max(0, ms);
+      const sec = Math.ceil(left / 1000);
+      return `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
     }
 
     function renderHost() {
       const s = stateRef.current;
-      const mission = currentMission();
-      document.getElementById("phase-pill").textContent = s.phase.toUpperCase() + (s.locked ? " / LOCKED" : "");
-      document.getElementById("players-pill").textContent = `${s.players.length} MINERS`;
-      document.getElementById("join-url").textContent = s.joinUrl;
+      if (!s) return;
+
       if (!qrMade && window.QRCode) {
         qrMade = true;
-        new QRCode(document.getElementById("qr"), { text: s.joinUrl, width: 152, height: 152, correctLevel: QRCode.CorrectLevel.H });
+        new QRCode(document.getElementById("qr"), { text: s.joinUrl, width: 126, height: 126, correctLevel: QRCode.CorrectLevel.H });
       }
 
-      const title = s.phase === "lobby" ? "Scan QR to join the quest" : mission.title;
-      document.getElementById("host-title").textContent = title;
-      document.getElementById("host-code").textContent = mission.code;
+      document.getElementById("join-url").textContent = s.joinUrl;
+      document.getElementById("phase-pill").textContent = s.phase.toUpperCase();
+      document.getElementById("players-pill").textContent = `${s.players.length} OPS`;
+      document.getElementById("timer-pill").textContent = s.phase === "running" ? formatTime(s.durationMs - s.elapsedMs) : "02:30";
+      document.getElementById("core-label").textContent = `${s.coreHp} / ${s.maxCoreHp}`;
+      document.getElementById("core-fill").style.width = `${pct(s.coreHp, s.maxCoreHp)}%`;
+      document.getElementById("shield-label").textContent = `${s.shield}`;
+      document.getElementById("shield-fill").style.width = `${pct(s.shield, 420)}%`;
+      document.getElementById("combo-label").textContent = `x${s.combo.toFixed(1)}`;
+      document.getElementById("combo-fill").style.width = `${pct(s.combo, 5)}%`;
 
-      const reveal = s.phase === "reveal";
-      document.getElementById("intel-cwe").textContent = reveal ? mission.cwe : "Locked";
-      document.getElementById("intel-vuln").textContent = reveal ? mission.vulnerability : "Hidden";
-      document.getElementById("intel-patch").textContent = reveal ? mission.patch : "Hidden";
-      document.getElementById("intel-agent").textContent = reveal ? mission.agent : "Hidden";
-
-      document.querySelectorAll(".zone").forEach((zone) => {
-        const idx = Number(zone.dataset.zone);
-        zone.classList.toggle("active", idx === s.currentMission && s.phase !== "lobby");
-        zone.classList.toggle("complete", idx < s.currentMission || (idx === s.currentMission && s.phase === "reveal"));
-        zone.classList.toggle("locked", idx > s.currentMission);
-      });
-
+      renderThreats(s);
       renderTeams(s);
       renderPlayers(s);
       renderFeed(s);
+
+      if (s.phase === "ended" && s.winner) {
+        document.getElementById("core-box").innerHTML = `WINNER<br>${s.winner.name.toUpperCase()}`;
+      } else {
+        document.getElementById("core-box").innerHTML = "SERVER<br>CORE";
+      }
+    }
+
+    function renderThreats(s) {
+      const field = document.getElementById("battlefield");
+      field.querySelectorAll(".threat").forEach((node) => node.remove());
+      s.threats.forEach((threat) => {
+        const el = document.createElement("div");
+        const laneTop = [7, 30, 53, 76][threat.lane] || 7;
+        const left = 7 + threat.progress * 68;
+        el.className = `threat ${threat.scanned ? "scanned" : ""}`;
+        el.style.color = threat.color;
+        el.style.left = `${left}%`;
+        el.style.top = `${laneTop}%`;
+        el.innerHTML = `
+          <strong>${threat.name}</strong>
+          <small>${threat.cwe} / ${threat.secure}</small>
+          <div class="hp-mini"><span style="width:${pct(threat.hp, threat.maxHp)}%"></span></div>
+        `;
+        field.appendChild(el);
+      });
     }
 
     function renderTeams(s) {
-      const box = document.getElementById("team-scoreboard");
+      const box = document.getElementById("team-list");
       box.innerHTML = "";
       [...s.teams].sort((a, b) => b.score - a.score).forEach((team) => {
         const row = document.createElement("div");
-        row.className = "team-row";
+        row.className = "row";
         row.innerHTML = `
-          <span class="team-dot" style="color:${team.color}; background:${team.color}"></span>
-          <span><strong>${team.name}</strong><small>${team.artifacts.length ? team.artifacts.join(" + ") : "No artifacts yet"}</small></span>
+          <span class="dot" style="color:${team.color}"></span>
+          <span><strong>${team.name}</strong><small>Energy ${team.energy}% / Agent bursts ${team.agents}</small></span>
           <span class="score">${team.score}</span>
         `;
         box.appendChild(row);
@@ -681,15 +646,15 @@
     }
 
     function renderPlayers(s) {
-      const box = document.getElementById("player-scoreboard");
+      const box = document.getElementById("player-list");
       box.innerHTML = "";
-      [...s.players].sort((a, b) => b.score - a.score).slice(0, 8).forEach((player, idx) => {
-        const team = s.teams.find((t) => t.id === player.team);
+      [...s.players].sort((a, b) => b.score - a.score).slice(0, 8).forEach((player, index) => {
+        const team = s.teams.find((item) => item.id === player.team);
         const row = document.createElement("div");
-        row.className = "player-row";
+        row.className = "row";
         row.innerHTML = `
-          <span class="score">#${idx + 1}</span>
-          <span><strong>${player.name}</strong><small>${team ? team.name : "Team"} / streak ${player.streak}</small></span>
+          <span class="score">#${index + 1}</span>
+          <span><strong>${player.name}</strong><small>${team ? team.name : "Team"} / ${player.actions} actions</small></span>
           <span class="score">${player.score}</span>
         `;
         box.appendChild(row);
@@ -701,143 +666,99 @@
       box.innerHTML = "";
       s.feed.forEach((item) => {
         const div = document.createElement("div");
-        div.className = `feed-item ${item.type || ""}`;
+        div.className = item.type || "";
         div.textContent = `${item.time ? item.time + " - " : ""}${item.text}`;
         box.appendChild(div);
       });
     }
 
     function hostAction(action) {
-      post(`host:${action}`).then(() => {
-        if (action === "reveal") celebrate();
+      post(`host:${action}`).then((data) => {
+        if (data.ok && action === "start") pulse("#core-box");
       });
     }
 
-    function awardMamBonus() {
-      const s = stateRef.current;
-      const leader = [...s.teams].sort((a, b) => b.score - a.score)[0] || s.teams[0];
-      const team = prompt("Mam bonus team id: redstone, diamond, emerald, nether", leader.id);
-      if (team) post("host:bonus", { team }).then(celebrate);
-    }
-
     async function joinGame() {
-      const name = document.getElementById("name-input").value.trim() || "Miner";
+      const name = document.getElementById("name-input").value.trim() || "Operator";
       const team = document.getElementById("team-input").value;
-      const result = await post("join", { name, team });
-      playerId = result.playerId;
-      localStorage.setItem("securecraft_player_id", playerId);
+      const data = await post("join", { name, team });
+      if (!data.ok) return toast("Join failed. Try again.");
+      playerId = data.playerId;
+      localStorage.setItem("coreraid_player_id", playerId);
       document.getElementById("join-screen").classList.add("hidden");
       document.getElementById("play-screen").classList.remove("hidden");
-      toast("Joined the quest. Watch the TV for mission control.");
+      toast("Joined. Wait for Ibrahim to start the raid.");
       renderPlayer();
     }
 
     function renderPlayer() {
       const s = stateRef.current;
       if (!s) return;
-      const player = s.players.find((p) => p.id === playerId);
+      const player = s.players.find((item) => item.id === playerId);
       if (!player) {
         document.getElementById("join-screen").classList.remove("hidden");
         document.getElementById("play-screen").classList.add("hidden");
         return;
       }
+
       document.getElementById("join-screen").classList.add("hidden");
       document.getElementById("play-screen").classList.remove("hidden");
-      const team = s.teams.find((t) => t.id === player.team);
-      const mission = currentMission();
-      if (mission.id !== lastMissionId) {
-        selected = { vuln: null, patch: null, agent: null };
-        lastMissionId = mission.id;
-      }
+      const team = s.teams.find((item) => item.id === player.team);
+      const target = [...s.threats].sort((a, b) => b.progress - a.progress)[0];
       document.getElementById("player-name").textContent = player.name;
-      document.getElementById("player-team").textContent = `${team.name} Team`;
+      document.getElementById("player-team").textContent = `${team.name} Team Controller`;
       document.getElementById("player-score").textContent = player.score;
-      document.getElementById("mission-eyebrow").textContent = `${mission.biome} / ${s.phase}`;
-      document.getElementById("player-mission").textContent = mission.title;
-      document.getElementById("bug-line").textContent = `BugCrafter: "${mission.bugCrafter}"`;
-      document.getElementById("player-code").textContent = mission.code;
-      document.getElementById("submit-btn").disabled = s.phase !== "mission" || s.locked || hasAnswered(s, player.id, mission.id);
-      renderOptions(mission);
+      document.getElementById("player-phase").textContent = s.phase.toUpperCase();
+      document.getElementById("team-energy-label").textContent = `${team.energy}%`;
+      document.getElementById("team-energy-fill").style.width = `${team.energy}%`;
+      document.getElementById("live-target").textContent = target
+        ? `${target.name} approaching ${s.lanes[target.lane]} lane. Secure fix: ${target.secure}.`
+        : s.phase === "running" ? "No active threat. Build shield or prepare overclock." : "Waiting for Start Raid.";
     }
 
-    function hasAnswered(s, pid, missionId) {
-      return s.answers.some((a) => a.playerId === pid && a.missionId === missionId);
+    async function sendAction(kind) {
+      const data = await post("action", { playerId, kind });
+      toast(data.message || "Action sent.");
+      if (data.ok) pulse(`.${kind}`);
     }
 
-    function renderOptions(mission) {
-      renderOptionSet("vuln", mission.questions.vuln);
-      renderOptionSet("patch", mission.questions.patch);
-      renderOptionSet("agent", mission.questions.agent);
+    function toast(text) {
+      const el = document.getElementById("toast");
+      el.textContent = text;
+      el.style.display = "block";
+      if (window.gsap) gsap.fromTo(el, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.18 });
+      setTimeout(() => {
+        if (window.gsap) gsap.to(el, { y: 18, opacity: 0, duration: 0.2, onComplete: () => el.style.display = "none" });
+        else el.style.display = "none";
+      }, 1600);
     }
 
-    function renderOptionSet(kind, options) {
-      const box = document.getElementById(`${kind}-options`);
-      box.innerHTML = "";
-      options.forEach((text, idx) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = `option ${selected[kind] === idx ? "selected" : ""}`;
-        btn.textContent = `${String.fromCharCode(65 + idx)}. ${text}`;
-        btn.onclick = () => {
-          selected[kind] = idx;
-          renderPlayer();
-        };
-        box.appendChild(btn);
-      });
-    }
-
-    async function submitAnswer(event) {
-      event.preventDefault();
-      if ([selected.vuln, selected.patch, selected.agent].some((v) => v === null)) {
-        toast("Choose all three: vulnerability, patch, and agent.");
-        return;
-      }
-      const result = await post("answer", { playerId, ...selected });
-      toast(result.duplicate ? "Already submitted for this mission." : `Patch submitted. Score change: ${result.total}`);
-      selected = { vuln: null, patch: null, agent: null };
-    }
-
-    async function usePower(type) {
-      const result = await post("powerup", { playerId, type });
-      if (result.ok) {
-        const mission = currentMission();
-        if (type === "compass") toast(`Compass clue: Think ${mission.cwe}.`);
-        if (type === "scroll") toast("RAG Scroll: eliminate the option that sounds like hiding, delaying, or decoration.");
-        if (type === "shield") toast("Shield armed. One zero-score answer penalty can be absorbed.");
-      } else {
-        toast("Power-up unavailable.");
-      }
-    }
-
-    function celebrate() {
-      if (window.gsap) {
-        gsap.fromTo(".zone.active", { scale: 0.96 }, { scale: 1.05, yoyo: true, repeat: 3, duration: 0.16 });
-      }
+    function pulse(selector) {
+      if (!window.gsap) return;
+      gsap.fromTo(selector, { scale: 0.96 }, { scale: 1.04, yoyo: true, repeat: 1, duration: 0.13 });
     }
 
     function initThree() {
       if (!window.THREE) return;
-      const canvas = document.getElementById("fx-canvas");
+      const canvas = document.getElementById("fx");
       const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 100);
-      camera.position.z = 9;
+      camera.position.z = 8;
       const group = new THREE.Group();
       scene.add(group);
-      const geometry = new THREE.BoxGeometry(0.42, 0.42, 0.42);
-      const materials = [varMat("#32d6ff"), varMat("#42e66f"), varMat("#ffcf4d"), varMat("#b06cff")];
-      for (let i = 0; i < 58; i++) {
-        const cube = new THREE.Mesh(geometry, materials[i % materials.length]);
+      const geo = new THREE.BoxGeometry(0.28, 0.28, 0.28);
+      const colors = ["#32d6ff", "#42e66f", "#ffcf4d", "#b06cff", "#ff4d3d"];
+      for (let i = 0; i < 90; i++) {
+        const mat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length], roughness: 0.28, metalness: 0.35, transparent: true, opacity: 0.55 });
+        const cube = new THREE.Mesh(geo, mat);
         cube.position.set((Math.random() - 0.5) * 18, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 8);
         cube.rotation.set(Math.random(), Math.random(), Math.random());
         group.add(cube);
       }
-      const light = new THREE.PointLight(0xffffff, 18, 80);
-      light.position.set(2, 3, 4);
+      const light = new THREE.PointLight(0xffffff, 20, 80);
+      light.position.set(3, 3, 4);
       scene.add(light);
-      function varMat(color) {
-        return new THREE.MeshStandardMaterial({ color, roughness: 0.24, metalness: 0.25, transparent: true, opacity: 0.55 });
-      }
       function resize() {
         renderer.setSize(innerWidth, innerHeight);
         renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -846,14 +767,15 @@
       }
       addEventListener("resize", resize);
       resize();
-      function animate() {
-        group.rotation.x += 0.0014;
-        group.rotation.y += 0.002;
+      function frame() {
+        group.rotation.x += 0.001;
+        group.rotation.y += 0.0017;
         renderer.render(scene, camera);
-        requestAnimationFrame(animate);
+        requestAnimationFrame(frame);
       }
-      animate();
+      frame();
     }
+
     initThree();
   </script>
 </body>
