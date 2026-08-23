@@ -540,6 +540,7 @@
     const stateRef = { current: null };
     let playerId = localStorage.getItem("coreraid_player_id") || "";
     let qrMade = false;
+    let lastQrUrl = "";
 
     if (isPlayer) playerApp.classList.remove("hidden");
     else hostApp.classList.remove("hidden");
@@ -582,9 +583,21 @@
       const s = stateRef.current;
       if (!s) return;
 
-      if (!qrMade && window.QRCode) {
+      if (!qrMade || lastQrUrl !== s.joinUrl) {
         qrMade = true;
-        new QRCode(document.getElementById("qr"), { text: s.joinUrl, width: 126, height: 126, correctLevel: QRCode.CorrectLevel.H });
+        lastQrUrl = s.joinUrl;
+        const qrBox = document.getElementById("qr");
+        qrBox.innerHTML = "";
+        if (window.QRCode) {
+          new QRCode(qrBox, { text: s.joinUrl, width: 126, height: 126, correctLevel: QRCode.CorrectLevel.H });
+        } else {
+          const img = document.createElement("img");
+          img.alt = "Join QR code";
+          img.width = 126;
+          img.height = 126;
+          img.src = `https://api.qrserver.com/v1/create-qr-code/?size=126x126&data=${encodeURIComponent(s.joinUrl)}`;
+          qrBox.appendChild(img);
+        }
       }
 
       document.getElementById("join-url").textContent = s.joinUrl;
