@@ -545,6 +545,39 @@
     if (isPlayer) playerApp.classList.remove("hidden");
     else hostApp.classList.remove("hidden");
 
+    function browserJoinUrl() {
+      const url = new URL(location.href);
+      url.search = "?player=1";
+      return url.toString();
+    }
+
+    function renderQr(joinUrl) {
+      if (isPlayer || !joinUrl) return;
+      if (!qrMade || lastQrUrl !== joinUrl) {
+        qrMade = true;
+        lastQrUrl = joinUrl;
+        const qrBox = document.getElementById("qr");
+        if (!qrBox) return;
+        qrBox.innerHTML = "";
+        if (window.QRCode) {
+          new QRCode(qrBox, { text: joinUrl, width: 126, height: 126, correctLevel: QRCode.CorrectLevel.H });
+        } else {
+          const img = document.createElement("img");
+          img.alt = "Join QR code";
+          img.width = 126;
+          img.height = 126;
+          img.src = `https://api.qrserver.com/v1/create-qr-code/?size=126x126&data=${encodeURIComponent(joinUrl)}`;
+          qrBox.appendChild(img);
+        }
+      }
+    }
+
+    if (!isPlayer) {
+      const fallbackUrl = browserJoinUrl();
+      document.getElementById("join-url").textContent = fallbackUrl;
+      renderQr(fallbackUrl);
+    }
+
     async function refreshState() {
       try {
         const res = await fetch("/api/game", { cache: "no-store" });
@@ -552,6 +585,7 @@
         isPlayer ? renderPlayer() : renderHost();
       } catch (err) {
         console.warn("refresh failed", err);
+        if (!isPlayer) renderQr(browserJoinUrl());
       }
     }
 
@@ -583,22 +617,7 @@
       const s = stateRef.current;
       if (!s) return;
 
-      if (!qrMade || lastQrUrl !== s.joinUrl) {
-        qrMade = true;
-        lastQrUrl = s.joinUrl;
-        const qrBox = document.getElementById("qr");
-        qrBox.innerHTML = "";
-        if (window.QRCode) {
-          new QRCode(qrBox, { text: s.joinUrl, width: 126, height: 126, correctLevel: QRCode.CorrectLevel.H });
-        } else {
-          const img = document.createElement("img");
-          img.alt = "Join QR code";
-          img.width = 126;
-          img.height = 126;
-          img.src = `https://api.qrserver.com/v1/create-qr-code/?size=126x126&data=${encodeURIComponent(s.joinUrl)}`;
-          qrBox.appendChild(img);
-        }
-      }
+      renderQr(s.joinUrl || browserJoinUrl());
 
       document.getElementById("join-url").textContent = s.joinUrl;
       document.getElementById("phase-pill").textContent = s.phase.toUpperCase();
